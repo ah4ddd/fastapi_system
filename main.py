@@ -9,3 +9,7 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.get("/mission")
+def mission():
+    return ({"mission":"Learn Fastapi and build cool shit"})
