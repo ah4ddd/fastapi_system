@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from typing import Optional, Dict, Any
+from pydantic import BaseModel #data validation and parsing library for Python
 
 #App instance
 #This object represents my entire service
@@ -16,7 +17,7 @@ def health_check():
 
 @app.get("/mission")
 def mission():
-    return ({"mission":"Learn Fastapi and build cool shit"})
+    return {"mission":"Learn Fastapi and build cool shit"}
 
 #path parameter
 @app.get("/items/{item_id}")
@@ -32,11 +33,14 @@ def search_item(q: Optional[str] = None, limit: int = 10):
         "limit": limit,
         "message": f"Searching for '{q} with {limit}"}
 
-#works but its dangerous garbage
+'''Defining a pydantic model (data schema + validation),
+    'class Item' follows pydantic rules'''
+class Item(BaseModel): # base class that all Pydantic models inherit from
+    #custom data structure
+    name: str
+    price: float
+    description: Optional[str] = None
+
 @app.post("/create_items")
-def create_item(item: Dict[str, Any]):
-    return {
-        "received": item
-    }
-
-
+def create_item(item: Item):
+    return {"item": item}
