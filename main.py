@@ -1,7 +1,8 @@
 from fastapi import FastAPI
-from typing import Optional
+from typing import Optional, Dict, Any
 
-#app instance
+#App instance
+#This object represents my entire service
 app = FastAPI()
 
 #creating endpoints with decorators
@@ -26,7 +27,16 @@ def read_item(item_id: int): #type hint, validates it's an integar
 #query parameter (anything after '?' in URL)
 @app.get("/search")
 def search_item(q: Optional[str] = None, limit: int = 10):
-    return {
+    return { # on web = ?key=value&key=value&key=value
         "query": q,
         "limit": limit,
         "message": f"Searching for '{q} with {limit}"}
+
+#works but its dangerous garbage
+@app.post("/create_items")
+def create_item(item: Dict[str, Any]):
+    return {
+        "received": item
+    }
+
+
