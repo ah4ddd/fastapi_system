@@ -1,5 +1,7 @@
+from dataclasses import field
+from click import File
 from fastapi import FastAPI
-from pydantic import BaseModel #data validation and parsing library for Python
+from pydantic import BaseModel, Field #data validation and parsing library for Python
 
 #App instance
 #This object represents my entire service
@@ -29,7 +31,7 @@ def read_item(item_id: int): #type hint, validates it's an integar
 
 #query parameter (anything after '?' in URL)
 @app.get("/search")
-def search_item(q: str| None, limit: int = 10):
+def search_item(q: str| None = None, limit: int = 10):
     return { # on web = ?key=value&key=value&key=value
         "query": q,
         "limit": limit,
@@ -39,9 +41,10 @@ def search_item(q: str| None, limit: int = 10):
     'class Item' follows pydantic rules'''
 class ItemCreate(BaseModel): # base class that all Pydantic models inherit from
     #custom data structure (dict-json format)
-    name: str
-    price: float
-    description: str | None #union (replacement of 'Optional')
+    # Field decides what rules the input must obey once it exists
+    name: str =Field(min_length=3)
+    price: float = Field(gt=0)
+    description: str | None = Field(default=None, max_length=200) #union (replacement of 'Optional')
 
 class ItemInDB(ItemCreate):
     id: int
@@ -53,7 +56,7 @@ class ItemInPublic(BaseModel):
     id: int
     name: str
     price: float
-    description: str | None
+    description: str | None = None
 
 # response_model = An output filter + validator that runs AFTER your function finishes
 @app.post("/create_items", response_model=ItemInPublic)
@@ -79,7 +82,7 @@ def create_item(item: ItemCreate): #validates it as ItemCreate
 
 #Response is a list, and the elements inside that list follow the ItemInDB schema
 @app.get("/items", response_model=list[ItemInPublic]) #type parameters
-def get_items() -> list[ItemInPublic]: #function intended to return 'list[ItemInPublic]
+def get_items() -> list[ItemInPublic]: #function intended to return 'list[ItemInPublic]'
     '''
 serialized json conversion pipeline:
 ItemInDB object

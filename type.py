@@ -1,11 +1,13 @@
-age: int = 2
-price: float = 99.9
-name: str = "Ahad"
-is_alive: bool = True
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
 
-#annotations
-def add(a: int, b: int) -> int: #this funtion returns an 'int'
-    return a + b
+app = FastAPI()
 
-#no enforcement like fastapi
-print(add("x","y"))
+class ItemCreate(BaseModel):
+    name: str = Field(min_length=3)
+    price: float = Field(gt=0)
+    description: str | None = Field(default=None, max_length=200)
+
+@app.post("/items")
+def create_item(item: ItemCreate):
+    return item
