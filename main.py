@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from typing import Optional
 from pydantic import BaseModel #data validation and parsing library for Python
 
 #App instance
@@ -20,7 +19,7 @@ def health_check():
 
 @app.get("/mission")
 def mission():
-    return {"mission":"Learn Fastapi and build cool shit"}
+    return {"mission":"Learning Fastapi to build cool shit"}
 
 #path parameter
 @app.get("/item/{item_id}")
@@ -30,7 +29,7 @@ def read_item(item_id: int): #type hint, validates it's an integar
 
 #query parameter (anything after '?' in URL)
 @app.get("/search")
-def search_item(q: Optional[str] = None, limit: int = 10):
+def search_item(q: str| None, limit: int = 10):
     return { # on web = ?key=value&key=value&key=value
         "query": q,
         "limit": limit,
@@ -42,7 +41,7 @@ class ItemCreate(BaseModel): # base class that all Pydantic models inherit from
     #custom data structure (dict-json format)
     name: str
     price: float
-    description: Optional[str] = None
+    description: str | None #union (replacement of 'Optional')
 
 class ItemInDB(ItemCreate):
     id: int
@@ -54,7 +53,7 @@ class ItemInPublic(BaseModel):
     id: int
     name: str
     price: float
-    description: Optional[str] = None
+    description: str | None
 
 # response_model = An output filter + validator that runs AFTER your function finishes
 @app.post("/create_items", response_model=ItemInPublic)
@@ -79,8 +78,8 @@ def create_item(item: ItemCreate): #validates it as ItemCreate
 
 
 #Response is a list, and the elements inside that list follow the ItemInDB schema
-@app.get("/items", response_model=list[ItemInPublic])
-def get_items():
+@app.get("/items", response_model=list[ItemInPublic]) #type parameters
+def get_items() -> list[ItemInPublic]: #function intended to return 'list[ItemInPublic]
     '''
 serialized json conversion pipeline:
 ItemInDB object
