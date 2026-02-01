@@ -17,5 +17,6 @@ async def main():
         task("C", 2),
     )
 
-# creates and starts event loop
+# creates and starts event loop ⏸ 🔀 ⏯
 asyncio.run(main())
+
