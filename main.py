@@ -1,6 +1,5 @@
-from dataclasses import field
-from click import File
-from fastapi import FastAPI
+from email import message
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field #data validation and parsing library for Python
 
 #App instance
@@ -58,8 +57,12 @@ class ItemInPublic(BaseModel):
     price: float
     description: str | None = None
 
+class CreateItemResponse(BaseModel):
+    item: ItemInPublic
+    message: str
+
 # response_model = An output filter + validator that runs AFTER your function finishes
-@app.post("/create_items", response_model=ItemInPublic)
+@app.post("/create_items", response_model=CreateItemResponse)
 def create_item(item: ItemCreate): #validates it as ItemCreate
     global item_id_counter #modify global counter
 
@@ -77,7 +80,8 @@ def create_item(item: ItemCreate): #validates it as ItemCreate
     items_db.append(new_item)
     item_id_counter += 1
 
-    return new_item #returns json formatted string converted from stored object
+    return {"item": new_item,
+            "message": f"Item '{item.name} created successfully"} #returns json formatted string converted from stored object
 
 
 #Response is a list, and the elements inside that list follow the ItemInDB schema
@@ -92,3 +96,11 @@ ItemInDB object
 → HTTP response
 '''
     return items_db
+
+@app.get("/items/{item_id}", response_model=ItemInPublic)
+def get_item(item_id: int) -> ItemInPublic:
+    for item in items_db:
+        if item.id == item_id:
+            return item
+
+    raise HTTPException(status_code=404, detail="Item not found")
