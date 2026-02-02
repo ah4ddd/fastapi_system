@@ -1,5 +1,4 @@
-from email import message
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field #data validation and parsing library for Python
 
 #App instance
@@ -38,6 +37,7 @@ def search_item(q: str| None = None, limit: int = 10):
 
 '''Defining a pydantic model (data schema + validation),
     'class Item' follows pydantic rules'''
+#What the CLIENT sends (input)
 class ItemCreate(BaseModel): # base class that all Pydantic models inherit from
     #custom data structure (dict-json format)
     # Field decides what rules the input must obey once it exists
@@ -45,24 +45,35 @@ class ItemCreate(BaseModel): # base class that all Pydantic models inherit from
     price: float = Field(gt=0)
     description: str | None = Field(default=None, max_length=200) #union (replacement of 'Optional')
 
+#What lives in DATABASE (internal)
 class ItemInDB(ItemCreate):
     id: int
     #internal
     cost_price : float
     supplier_secret: str
 
+#What the CLIENT receives (output)
 class ItemInPublic(BaseModel):
     id: int
     name: str
     price: float
     description: str | None = None
 
+#Wrapper for POST response
 class CreateItemResponse(BaseModel):
     item: ItemInPublic
     message: str
 
+#Utility function -- Searches items_db for an item with matching ID
+def find_item(item_id: int) -> ItemInDB | None:
+    '''search item_db and return item or None'''
+    for item in items_db:
+        if item.id == item_id:
+            return item
+    return None
+
 # response_model = An output filter + validator that runs AFTER your function finishes
-@app.post("/create_items", response_model=CreateItemResponse)
+@app.post("/create_items", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
 def create_item(item: ItemCreate): #validates it as ItemCreate
     global item_id_counter #modify global counter
 
@@ -80,13 +91,15 @@ def create_item(item: ItemCreate): #validates it as ItemCreate
     items_db.append(new_item)
     item_id_counter += 1
 
-    return {"item": new_item,
-            "message": f"Item '{item.name} created successfully"} #returns json formatted string converted from stored object
+    return {
+        "item": new_item,
+        "message": f"Item '{item.name} created successfully"
+    } #returns json formatted string converted from stored object
 
 
 #Response is a list, and the elements inside that list follow the ItemInDB schema
 @app.get("/items", response_model=list[ItemInPublic]) #type parameters
-def get_items() -> list[ItemInPublic]: #function intended to return 'list[ItemInPublic]'
+def get_items() -> list[ItemInPublic]: #function intended to return 'list[ItemInPublic] '
     '''
 serialized json conversion pipeline:
 ItemInDB object
@@ -97,10 +110,58 @@ ItemInDB object
 '''
     return items_db
 
+# GET single item by ID
 @app.get("/items/{item_id}", response_model=ItemInPublic)
 def get_item(item_id: int) -> ItemInPublic:
-    for item in items_db:
-        if item.id == item_id:
-            return item
+    item = find_item(item_id)
 
-    raise HTTPException(status_code=404, detail="Item not found")
+    if item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Item with ID {item_id} does not exist"
+        )
+    return item # type: ignore
+
+# PUt - update an item
+@app.put("/items/{item_id}", response_model=ItemInPublic)
+def update_item(item_id: int, item_update: ItemCreate) -> ItemInPublic:
+    # Find the item
+    existing_item = find_item(item_id)
+
+    if existing_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Item with ID {item_id} does not exist"
+        )
+
+    # Find index in list
+    index = items_db.index(existing_item)
+
+    # Create updated item (keep same ID and internal fields)
+    updated_item = ItemInDB(
+        id=existing_item.id,
+        name=item_update.name,
+        price=item_update.price,
+        description=item_update.description,
+        cost_price=item_update.price * 0.6,  # recalculate
+        supplier_secret=existing_item.supplier_secret  # keep original
+    )
+
+    # Replace in list
+    items_db[index] = updated_item
+
+    return updated_item # type: ignore
+
+# DELETE — remove an item
+@app.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_item(item_id: int):
+    existing_item = find_item(item_id)
+
+    if existing_item is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Item with ID {item_id} does not exist"
+        )
+
+    items_db.remove(existing_item)
+    # 204 means no response body -- don't return anything
