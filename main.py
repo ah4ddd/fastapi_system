@@ -165,3 +165,20 @@ def delete_item(item_id: int):
 
     items_db.remove(existing_item)
     # 204 means no response body -- don't return anything
+
+
+"""
+Client sends JSON
+↓
+FastAPI validates → creates Python object
+↓
+Python object lives in items_db
+↓
+Loop checks attributes on Python object
+↓
+Object returned
+↓
+FastAPI filters → JSON
+↓
+Client sees response
+"""

@@ -1,22 +1,24 @@
 import asyncio
+import string
+import random
 import time
 
-#'async def' creates a coroutine object, not execution.
-async def task(name, delay):
-    print(f"{name} started at {time.time():.2f}")
-    await asyncio.sleep(delay)
-    print(f"{name} finished at {time.time():.2f}")
+sem = asyncio.Semaphore(3)  # only 3 tasks at once
 
-'''
-Event loop - the executor, not the coroutine.
-Only way to execute async function'''
+async def task(name):
+    async with sem:
+        start = time.time()
+        print(f"{name} STARTED at {start:.2f}")
+
+        # simulate real I/O wait (DB / network)
+        delay = random.uniform(1, 4)
+        await asyncio.sleep(delay)
+
+        end = time.time()
+        print(f"{name} FINISHED at {end:.2f} (waited {delay:.2f}s)")
+
 async def main():
-    await asyncio.gather(
-        task("A", 10),
-        task("B", 1),
-        task("C", 2),
-    )
+    tasks = [task(letter) for letter in string.ascii_uppercase]  # A–Z
+    await asyncio.gather(*tasks)
 
-# creates and starts event loop ⏸ 🔀 ⏯
 asyncio.run(main())
-
