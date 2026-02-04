@@ -8,7 +8,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Include routers
+# Take all routes registered on this router and attach them to the main app
 app.include_router(items.router)
 
 # Root endpoints
@@ -22,3 +22,4 @@ async def health_check():
         "status": "healthy",
         "total_items": len(db.items_db)
     }
+

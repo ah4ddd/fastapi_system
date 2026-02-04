@@ -1,6 +1,8 @@
 from .models import ItemInDB
 
-# In-memory database
+"""Creates the in-memory storage.
+Same as items_db = [] in your original code,
+intended to store objects that follow the ItemInDB schema"""
 items_db: list[ItemInDB] = []
 item_id_counter = 1
 

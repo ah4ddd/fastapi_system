@@ -2,10 +2,16 @@ from fastapi import APIRouter, HTTPException, status
 from app.models import ItemCreate, ItemInPublic, CreateItemResponse, ItemInDB # type: ignore
 from app import database as db # type: ignore
 
-router = APIRouter(prefix="/items", tags=["items"])
+#Creates a router object. This will hold all item-related endpoints
+#Every route defined on this router gets /items glued in front of it
+router = APIRouter(prefix="/items", tags=["items"]) # tags=["items"]? purely for Swagger docs
 
+"""
+@router.get does NOT create a server.
+It only registers a route on this router object, and replaces app with router.
+"""
 @router.post("/", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
-async def create_item(item: ItemCreate):
+async def create_item(item: ItemCreate) -> CreateItemResponse:
     """Create a new item"""
     new_item = ItemInDB(
         id=db.get_next_id(),
