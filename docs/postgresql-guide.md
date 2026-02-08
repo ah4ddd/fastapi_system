@@ -81,7 +81,7 @@ PostgreSQL Server (The entire filing cabinet)
 
 -- In pgweb:
 -- Restart pgweb with a different --db flag:
--- pgweb --host=localhost --user=postgres --db=blog_app --pass=linuxpsql
+-- pgweb --host=localhost --user=postgres --db=blog_app --pass=yourpass
 ```
 
 ---
@@ -662,7 +662,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Connection string:
-DATABASE_URL = "postgresql://postgres:linuxpsql@localhost:5432/blog_app"
+DATABASE_URL = "postgresql://postgres:yourpass@localhost:5432/blog_app"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
