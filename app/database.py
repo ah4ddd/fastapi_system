@@ -1,47 +1,28 @@
-from .models import ItemInDB
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from .db_models import Base
+import os
+from dotenv import load_dotenv
 
-"""Creates the in-memory storage.
-Same as items_db = [] in your original code,
-intended to store objects that follow the ItemInDB schema"""
-items_db: list[ItemInDB] = []
-item_id_counter = 1
+# Loads environment variables from .env file.
+load_dotenv()
 
-def get_next_id() -> int:
-    """Get next available ID and increment counter"""
-    global item_id_counter
-    current_id = item_id_counter
-    item_id_counter += 1
-    return current_id
+# Get the connection string from environment variables.
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-async def find_item(item_id: int) -> ItemInDB | None:
-    """Search items_db for item with matching ID"""
-    # Using async even though it's in-memory to prepare for real DB
-    for item in items_db:
-        if item.id == item_id:
-            return item
-    return None
+# Replace postgresql:// with postgresql+asyncpg:// for async
+ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
 
-async def get_all_items() -> list[ItemInDB]:
-    """Return all items from database"""
-    return items_db
+# Create async engine
+engine = create_async_engine(ASYNC_DATABASE_URL, echo=True)
 
-async def add_item(item: ItemInDB) -> ItemInDB:
-    """Add item to database"""
-    items_db.append(item)
-    return item
+# Creates a factory for database sessions. A session = a conversation with the database.
+AsyncSessionLocal = async_sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
 
-async def update_item(item_id: int, updated_item: ItemInDB) -> ItemInDB:
-    """Update existing item in database"""
-    for index, item in enumerate(items_db):
-        if item.id == item_id:
-            items_db[index] = updated_item
-            return updated_item
-    raise ValueError(f"Item {item_id} not found")
-
-async def delete_item(item_id: int) -> bool:
-    """Delete item from database. Returns True if deleted."""
-    item = await find_item(item_id)
-    if item:
-        items_db.remove(item)
-        return True
-    return False
+# Dependency that FastAPI will use to inject database sessions into endpoints.
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
