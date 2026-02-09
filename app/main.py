@@ -19,7 +19,6 @@ async def read_root():
 @app.get("/health")
 async def health_check():
     return {
-        "status": "healthy",
-        "total_items": len(db.items_db)
+        "status": "healthy"
     }
 
