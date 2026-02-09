@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from app.routers import items # type: ignore
-from . import database as db
 
 app = FastAPI(
     title="FastAPI System",
