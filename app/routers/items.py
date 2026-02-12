@@ -7,6 +7,13 @@ from app.database import get_db # type: ignore
 
 router = APIRouter(prefix="/items", tags=["items"])
 
+"""db: AsyncSession = Depends(get_db)
+FastAPI calls get_db(), gets a session, injects it as db.
+new_item = ItemDB(...)
+Creates SQLAlchemy object (Python object, not in DB yet).
+db.add(new_item)
+Stages object for insertion.
+await db.commit()"""
 @router.post("/", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
 # Injects a database session into endpoint.
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
@@ -21,7 +28,7 @@ async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
 
     db.add(new_item) # Stage for insertion
     await db.commit() # Execute INSERT query
-    await db.refresh(new_item) # Get the auto-generated ID
+    await db.refresh(new_item) # Reloads the object from database to get the auto-generated id.
 
     return {
         "item": ItemInPublic(
@@ -52,6 +59,7 @@ async def get_items(db: AsyncSession = Depends(get_db)):
 @router.get("/{item_id}", response_model=ItemInPublic)
 async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
     """Get single item by ID"""
+    # SELECT * FROM items WHERE id = ?;
     result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
     item = result.scalar_one_or_none()
 
@@ -85,7 +93,8 @@ async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = 
     existing_item.description = item_update.description
     existing_item.cost_price = item_update.price * 0.6
     # Execute UPDATE query
-    await db.commit()
+    #SQLAlchemy detects changes and executes:
+    await db.commit() # UPDATE items SET name = ?, price = ?, cost_price = ? WHERE id = ?;
     await db.refresh(existing_item)
 
     return ItemInPublic(

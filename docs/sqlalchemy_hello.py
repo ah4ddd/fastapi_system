@@ -74,7 +74,7 @@ for product in all_products:
     # Returns: List of Product objects (not tuples).
     print(f"ID: {product.id}, Name: {product.name}, Price: {product.price}")
 
-# Step 8: Find specific product
+# Step 8: Find specific product (READ)
 """
 What this does:
 .filter(Product.name == "Laptop") = WHERE clause

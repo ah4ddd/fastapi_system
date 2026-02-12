@@ -10,7 +10,7 @@ class ItemDB(Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False) #nullable=False = NOT NULL (required)
     price = Column(Float, nullable=False)
     description = Column(String, nullable=True)
     cost_price = Column(Float, nullable=False)
