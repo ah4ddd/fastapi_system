@@ -27,8 +27,14 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 # Dependency that FastAPI will use to inject database sessions into endpoints.
+"""The heart of FastAPI + SQLAlchemy: get_db()
+This function is the entire bridge."""
 async def get_db():
-    # Creates a session
+    """
+    Yields a database session for a single request.
+
+    Pulls a connection from the engine's pool, starts a transaction
+    context, and ensures the session is closed after the request"""
     async with AsyncSessionLocal() as session:
         # give it to the endpoint
         yield session # When endpoint finishes, session closes automatically

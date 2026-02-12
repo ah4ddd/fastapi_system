@@ -40,6 +40,21 @@ async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
         "message": f"Item '{item.name}' created successfully"
     }
 
+"""
+How an endpoint actually works (step-by-step):
+1. HTTP request arrives.
+2. FastAPI detects `Depends(get_db)`.
+3. `get_db()` is called.
+4. A database session is created.
+5. The session is injected into `get_products`.
+6. The query executes.
+7. A response is returned to the client.
+8. FastAPI resumes `get_db()`.
+9. `db.close()` runs.
+10. The connection is returned to the pool.
+You never manually manage sessions inside routes.
+That's the whole point.
+"""
 @router.get("/", response_model=list[ItemInPublic])
 async def get_items(db: AsyncSession = Depends(get_db)):
     """Get all items"""
