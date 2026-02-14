@@ -15,7 +15,7 @@ db.add(new_item)
 Stages object for insertion.
 await db.commit()"""
 @router.post("/", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
-# Injects a database session into endpoint.
+# Injects a database session into endpoint, calls get_db(), gets the session, injects it as 'db'
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
     """Create a new item"""
     new_item = ItemDB(
@@ -71,6 +71,28 @@ async def get_items(db: AsyncSession = Depends(get_db)):
         for item in items
     ]
 
+"""
+Depends(). Full Dependency Flow:
+Request arrives
+    ↓
+FastAPI sees: db = Depends(get_db)
+    ↓
+FastAPI calls: get_db()
+    ↓
+get_db() creates AsyncSession
+    ↓
+FastAPI injects session as 'db' parameter
+    ↓
+Your endpoint uses 'db'
+    ↓
+Endpoint finishes
+    ↓
+get_db's 'async with' closes session
+    ↓
+Response sent
+
+Every request gets its own session. Session closes automatically.
+"""
 @router.get("/{item_id}", response_model=ItemInPublic)
 async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
     """Get single item by ID"""
@@ -133,3 +155,30 @@ async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
 
     await db.delete(item)  # Stage for deletion
     await db.commit()  # Execute DELETE query
+
+"""
+Let's simulate it mentally
+
+Imagine FastAPI doing this:
+
+Start request
+
+Call get_db()
+ → creates session
+ → enters async with
+ → hits yield
+ → pauses here
+
+Run your endpoint with that session
+
+Endpoint finishes
+
+Resume get_db()
+ → exit async with
+ → session closes
+
+End request
+
+
+This is dependency lifecycle management.
+"""

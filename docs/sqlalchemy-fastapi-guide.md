@@ -120,7 +120,7 @@ from sqlalchemy.orm import sessionmaker
 
 # Connection string format:
 # postgresql://username:password@host:port/database_name
-DATABASE_URL = "postgresql://postgres:linuxpsql@localhost:5432/fastapi_app"
+DATABASE_URL = "postgresql://postgres:password@localhost:5432/fastapi_app"
 
 # Create engine (connection pool manager):
 engine = create_engine(
@@ -666,7 +666,7 @@ target_metadata = Base.metadata  # Was: None
 
 ```ini
 # Change this line:
-sqlalchemy.url = postgresql://postgres:linuxpsql@localhost:5432/fastapi_app
+sqlalchemy.url = postgresql://postgres:password@localhost:5432/fastapi_app
 ```
 
 ### Create Your First Migration:
@@ -734,7 +734,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "postgresql://postgres:linuxpsql@localhost:5432/fastapi_app"
+DATABASE_URL = "postgresql://username:password@localhost:5432/fastapi_app"
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -850,7 +850,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, username=user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already exists")
-    
+
     # Create user:
     return crud.create_user(db=db, user=user)
 
@@ -911,7 +911,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-DATABASE_URL = "postgresql+asyncpg://postgres:linuxpsql@localhost:5432/fastapi_app"
+DATABASE_URL = "postgresql+asyncpg://bd_username:passwordl@localhost:5432/fastapi_app"
 
 engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
@@ -1337,5 +1337,5 @@ You now have the full picture: from raw SQL to production-ready FastAPI apps wit
 
 ---
 
-**Saved:** `sqlalchemy-fastapi-guide.md` | Last updated: Feb 2026  
+**Saved:** `sqlalchemy-fastapi-guide.md` | Last updated: Feb 2026
 **Author:** Your battle-hardened SQLAlchemy knowledge, forged in production.
