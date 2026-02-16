@@ -5,6 +5,12 @@ from app.models import ItemCreate, ItemInPublic, CreateItemResponse # type: igno
 from app.db_models import ItemDB # type: ignore
 from app.database import get_db # type: ignore
 
+"""
+APIRouter Configuration
+prefix: Auto-prepends "/items" to all routes in this file (e.g., /items/{id}).
+        Prevents repetitive path typing.
+tags: Groups these routes under an "items" header in the /docs UI.
+        Purely for organizing the Swagger documentation."""
 router = APIRouter(prefix="/items", tags=["items"])
 
 """db: AsyncSession = Depends(get_db)
@@ -15,19 +21,22 @@ db.add(new_item)
 Stages object for insertion.
 await db.commit()"""
 @router.post("/", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
-# Injects a database session into endpoint, calls get_db(), gets the session, injects it as 'db'
+# Injects a database session into endpoint, calls get_db(), gets the session, injects it as 'db', ItemCreate = Pydantic model (API layer)
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
-    """Create a new item"""
+    """Create new item with SQLAlchemy model (DB layer) = ItemDB
+    This represents:
+    Database table, Columns, Rows
+    This is what actually maps to PostgreSQL"""
     new_item = ItemDB(
         name=item.name,
         price=item.price,
         description=item.description,
         cost_price=item.price * 0.6,
         supplier_secret="ACME-42-PRIVATE"
-    ) # Create SQLAlchemy object
+    ) # Create SQLAlchemy object. Pydantic → SQLAlchemy object
 
-    db.add(new_item) # Stage for insertion
-    await db.commit() # Execute INSERT query
+    db.add(new_item) # Stage for insertion (Track this object. I plan to insert it)
+    await db.commit() # Execute INSERT query (Take everything I staged and make it permanent in the database)
     await db.refresh(new_item) # Reloads the object from database to get the auto-generated id.
 
     return {
@@ -57,9 +66,15 @@ That's the whole point.
 """
 @router.get("/", response_model=list[ItemInPublic])
 async def get_items(db: AsyncSession = Depends(get_db)):
-    """Get all items"""
+    """
+    - execute() runs the SQL query which fetches data,
+    and brings results from the database into memory
+    - It stores them inside a result container
+    - .scalars() extracts the ORM objects from each row
+    - .all() turns them into a Python list
+    - That list is now usable in your endpoint"""
     result = await db.execute(select(ItemDB)) # SELECT * FROM items
-    items = result.scalars().all() # Get all results as Python objects
+    items = result.scalars().all() # Get all results as Python objects into a list
 
     return [
         ItemInPublic(
@@ -96,10 +111,11 @@ Every request gets its own session. Session closes automatically.
 @router.get("/{item_id}", response_model=ItemInPublic)
 async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
     """Get single item by ID"""
-    # SELECT * FROM items WHERE id = ?;
+    # SELECT * FROM items WHERE id = ?; where() adds a WHERE clause to the SELECT
     result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
-    item = result.scalar_one_or_none()
+    item = result.scalar_one_or_none() # Give me exactly one object if it exists. If nothing is found, return None
 
+    # If DB didn’t find that ID send 404.
     if item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -112,7 +128,30 @@ async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
         price=item.price,
         description=item.description
     )
+"""
+db
+│
+├── engine reference
+├── connection (open, active)
+├── transaction state
+├── identity map (object tracker)
+└── pending changes
 
+db (AsyncSession)
+│
+├── connection → PostgreSQL
+├── pending_inserts → [new_item]
+├── loaded_objects → {id: object}
+├── dirty_objects → modified rows
+└── transaction_state → active
+
+Engine
+ └── Pool
+      ├── Conn1
+      ├── Conn2
+      ├── Conn3
+      └── Conn4 (open → use → return → use → return → use → return)
+"""
 @router.put("/{item_id}", response_model=ItemInPublic)
 async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = Depends(get_db)):
     """Update an existing item"""
@@ -144,6 +183,7 @@ async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
     """Delete an item"""
+    # Find row
     result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
     item = result.scalar_one_or_none()
 
