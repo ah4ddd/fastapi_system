@@ -5,6 +5,8 @@ from app.models import ItemCreate, ItemInPublic, CreateItemResponse # type: igno
 from app.db_models import ItemDB # type: ignore
 from app.database import get_db # type: ignore
 
+# Rule: Anything that performs I/O (talks to the DB over network) needs await.
+
 """
 APIRouter Configuration
 prefix: Auto-prepends "/items" to all routes in this file (e.g., /items/{id}).
@@ -36,6 +38,7 @@ async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
     ) # Create SQLAlchemy object. Pydantic → SQLAlchemy object
 
     db.add(new_item) # Stage for insertion (Track this object. I plan to insert it)
+    # db.commit() is an async function. It returns a coroutine, must await it to actually execute.
     await db.commit() # Execute INSERT query (Take everything I staged and make it permanent in the database)
     await db.refresh(new_item) # Reloads the object from database to get the auto-generated id.
 

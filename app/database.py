@@ -37,9 +37,11 @@ async def get_db():
     Pulls a connection from the engine's pool, starts a transaction
     context, and ensures the session is closed after the request,
     The context manager handles cleanup."""
+    print("Creating database session...")
     async with AsyncSessionLocal() as session:
         # give it to the endpoint
         yield session # When endpoint finishes, session closes automatically
+    print("Closing database session...") # proves the session lifecycle.
 
 """
 When an endpoint uses:
