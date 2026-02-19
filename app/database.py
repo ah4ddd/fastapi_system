@@ -8,6 +8,9 @@ load_dotenv()
 
 # Get the connection string from environment variables.
 DATABASE_URL = os.getenv("DATABASE_URL", "")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set")
+
 
 # Replace postgresql:// with postgresql+asyncpg:// for async because we're using asyncpg driver (async PostgreSQL driver)
 ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
