@@ -3,8 +3,8 @@ from app.routers import items # type: ignore
 
 app = FastAPI(
     title="FastAPI System",
-    description="A production-ready CRUD API with async support",
-    version="1.0.0"
+    description="CRUD API with async support",
+    version="1.2.0"
 )
 
 # Take all routes registered on this router and attach them to the main app

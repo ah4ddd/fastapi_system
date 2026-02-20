@@ -5,7 +5,7 @@ class ItemCreate(BaseModel):
     name: str = Field(min_length=3)
     price: float = Field(gt=0)
     description: str | None = Field(default=None, max_length=200)
-    stock_quantity: int = 0
+    stock_quantity: int = Field(default=0, ge=0) # NEW (ge=0 means >= 0)
 
 # What lives in DATABASE (internal)
 class ItemInDB(ItemCreate):

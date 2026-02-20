@@ -1,3 +1,21 @@
+"""
+Deprecated schema setup (pre-Alembic)
+
+This script was used to create tables directly from SQLAlchemy models
+via Base.metadata.create_all().
+
+Previous workflow:
+    Models → create_all() → Database
+
+Current workflow (Alembic):
+    Models → alembic revision → Migration file → upgrade → Database
+
+create_all() applies schema changes immediately with no version control.
+Alembic introduces migration history and controlled schema evolution.
+
+Use Alembic for all schema changes going forward.
+"""
+
 """This file is a one-time setup tool.
 It creates database tables from your SQLAlchemy models."""
 import asyncio # Needed because this file runs an async function manually.
@@ -46,3 +64,4 @@ Internal flow:
 Result:
 All defined tables are created if they don't already exist.
 """
+
