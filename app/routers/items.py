@@ -34,7 +34,8 @@ async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
         price=item.price,
         description=item.description,
         cost_price=item.price * 0.6,
-        supplier_secret="ACME-42-PRIVATE"
+        supplier_secret="ACME-42-PRIVATE",
+        stock_quantity = item.stock_quantity
     ) # Create SQLAlchemy object. Pydantic → SQLAlchemy object
 
     db.add(new_item) # Stage for insertion (Track this object. I plan to insert it)
