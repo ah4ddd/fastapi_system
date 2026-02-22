@@ -1,3 +1,4 @@
+# PROJECT 3
 import requests
 from bs4 import BeautifulSoup
 # Comma Separated Values, very simple way to store table data like Excel.
@@ -38,9 +39,10 @@ with open('quotes.csv', 'w', newline='', encoding='utf-8') as file:
     # DEFINE COLUMNS (csv column headers)
     fieldnames = ['quote', 'author', 'tags']
     """
-    A helper object that knows:
-    How to take dictionaries
-    and write them properly into this CSV file.
+    A writer object that knows:
+    Take dictionaries
+    match their keys to column names
+    and write rows into this file accordingly
     """ # DictWriter = Translator, translate dict into CSV row using the keys
     # DictWriter expects each row as a dict matching the predefined fieldnames.
     writer = csv.DictWriter(file, fieldnames=fieldnames)
