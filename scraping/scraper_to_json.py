@@ -32,3 +32,22 @@ with open('quotes.json', 'w', encoding='utf-8') as file:
     json.dump(quotes_data, file, indent=2, ensure_ascii=False)
 
 print(f"Saved {len(quotes_data)} quotes to quotes.json")
+
+
+"""
+HTML is a tree
+
+Data lives in structure
+
+Containers preserve relationships
+
+Scrapers must extract structured records
+
+Lists and dictionaries model tabular and nested data
+
+CSV is flat
+
+JSON preserves nesting
+
+Serialization converts memory → file
+"""
