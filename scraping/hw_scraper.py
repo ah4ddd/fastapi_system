@@ -9,6 +9,29 @@ response = requests.get(url)
 
 book_data = []
 
+""" # HELPER functions
+parent = where to search
+tag	= what tag to find
+class_name = class filter
+default = fallback if missing
+"""
+def safe_text(parent, tag, class_name=None, default="N/A"):
+    # Try to find element.
+    found = parent.find(tag, class_=class_name)
+    # If found exists: Extract clean text. Else: Return fallback. No crash.
+    return found.text.strip() if found else default # .text = get_text()
+# sepration of concerns
+def safe_rating(parent):
+    tag = parent.find('p', class_='star-rating')
+    if tag:
+        classes = tag.get('class', [])
+        return classes[1] if len(classes) > 1 else "Unknown"
+    return "Unknown"
+
+def safe_attr(parent, tag, attr, default="N/A"):
+    found = parent.find(tag)
+    return found.get(attr, default) if found else default
+
 if response.status_code == 200:
     # .content gives Raw bytes, then BeautifulSoup + lxml Handles decoding itself
     soup = BeautifulSoup(response.content, 'lxml')
@@ -17,9 +40,10 @@ if response.status_code == 200:
 
     Each book is wrapped in an <article class="product_pod"> element,
     which serves as the semantic container for a single product card.
-    """
+    """# returns a list of tag objects (each book is literally one HTML block)
     books = soup.find_all('article', class_='product_pod')
 
+    # book = one article container per loop (book becomes the search scope)
     for book in books:
         """
         book
@@ -31,11 +55,11 @@ if response.status_code == 200:
         # Now: Inside that <a> there is no visible title text.
         # Instead: Book title lives inside HTML attribute: ['title']
         # ['title'] = Give the value of this attribute (just like dict)
-        title = book.h3.a['title'] # type:ignore
+        title = safe_attr(book.h3, 'a', 'title')
         # .text = returns visible text inside tag
-        price = book.find('p', class_='price_color').text # type:ignore
+        price = safe_text(book, 'p', 'price_color')
         # .strip() removes: \n   In stock   \n
-        availability = book.find('p', class_='instock availability').text.strip() # type: ignore
+        availability = safe_text(book, 'p', 'instock availability', "Unknown")
         """
         Find rating paragraph
         Get its class list
@@ -43,7 +67,7 @@ if response.status_code == 200:
         """
         # class is not one string, its LIST internally,
         # like: ['star-rating', 'Three'], so: ['class'][1] (give second item)
-        rating = book.find('p', class_='star-rating')['class'][1]  # type:ignore
+        rating = safe_rating(book)
 
         book_data.append({
             'title': title,
