@@ -136,6 +136,233 @@ href    : Link destination (used for extracting URLs)
         <a href="/product/123">
 """
 
+"""
+HTML, DOM, and Data Containers in Web Scraping
+==============================================
+
+Core Mental Model
+-----------------
+When scraping a webpage, you are NOT scraping classes or CSS.
+
+You are traversing the DOM (Document Object Model).
+
+HTML received from a webpage is raw text markup. The browser (and libraries
+like BeautifulSoup) parses this markup into a structured, hierarchical tree
+of objects in memory called the DOM.
+
+This tree represents parent-child relationships created by nested HTML tags.
+
+Example HTML:
+
+    <body>
+        <div>
+            <article>
+                <p>Hello</p>
+            </article>
+        </div>
+    </body>
+
+Becomes DOM Tree:
+
+    body
+     └── div
+          └── article
+                └── p
+                     └── "Hello" (text node)
+
+Scraping is the act of navigating this tree and extracting values from
+specific branches.
+
+
+Node Types in the DOM
+---------------------
+
+1. Element Node (Structure)
+   These are HTML tags:
+
+       <article>
+       <div>
+       <p>
+       <a>
+
+   Used to define structure and hierarchy.
+
+2. Attribute Node (Metadata)
+   Attributes provide extra data about an element:
+
+       <article class="product_pod" id="book_1">
+
+   Here:
+       class = attribute
+       id    = attribute
+
+3. Text Node (Content)
+   Text inside a tag becomes a child node:
+
+       <p>£51.77</p>
+
+   Structure:
+
+       p
+        └── "£51.77"
+
+
+Tags vs Attributes vs Text in Scraping
+--------------------------------------
+
+Tag:
+    soup.find('article')
+
+Attribute:
+    soup.find('article', class_='product_pod')
+
+Text:
+    tag.text
+
+Attribute Value:
+    tag['title']
+
+
+Tree Traversal in Practice
+--------------------------
+
+Given:
+
+    <article>
+        <h3>
+            <a title="Book Name">
+        </h3>
+    </article>
+
+Accessing:
+
+    book.h3.a['title']
+
+Means:
+
+    article → h3 → a → read 'title'
+
+You are walking down the DOM tree.
+
+
+Semantic vs Generic Tags
+------------------------
+
+<div>
+    Generic container.
+    Used purely for layout.
+    Has no inherent meaning about its content.
+
+<article>
+    Semantic container.
+    Represents a self-contained unit of content such as:
+        - Product card
+        - Blog post
+        - Job listing
+        - Book listing
+        - News item
+
+Semantic tags often indicate one full data record.
+
+Example:
+
+    <article class="product_pod">
+
+Represents one book (one complete dataset).
+
+Thus:
+
+    soup.find_all('article', class_='product_pod')
+
+Returns:
+    One DOM subtree per book.
+
+Ideal loop point.
+
+
+HTML5 Structural Tags Often Represent:
+--------------------------------------
+
+article : one data record
+section : grouped records
+nav     : navigation links
+header  : title area
+footer  : metadata
+main    : primary content
+aside   : sidebar
+
+
+Lists and Layout Containers
+---------------------------
+
+<li> = List Item
+
+Must exist inside:
+
+    <ul> (unordered list)
+    <ol> (ordered list)
+
+Frontend developers frequently use lists to build layout grids:
+
+    <ol class="row">
+        <li>
+            <article class="product_pod">Book 1</article>
+        </li>
+        <li>
+            <article class="product_pod">Book 2</article>
+        </li>
+    </ol>
+
+DOM Tree:
+
+    ol
+     ├── li
+     │    └── article.product_pod
+     ├── li
+     │    └── article.product_pod
+
+Here:
+
+    ol  = list container
+    li  = layout wrapper
+    article = actual content record
+
+So you loop on the element representing a full data record:
+
+    soup.find_all('article', class_='product_pod')
+
+If semantic tags are absent:
+
+    <li class="job-card">
+        <div class="title">Python Developer</div>
+        <div class="salary">$2000</div>
+    </li>
+
+Then:
+
+    soup.find_all('li', class_='job-card')
+
+Becomes your loop container.
+
+
+Final Model
+-----------
+
+HTML  = raw markup text
+DOM   = parsed hierarchical tree of nodes
+
+Tags        = structural elements
+Attributes  = metadata on elements
+Text        = content inside elements
+Nesting     = parent-child hierarchy
+
+Scraping is:
+    Traversing repeated DOM subtrees and extracting values from them.
+
+You are not scraping a page.
+You are walking a tree and harvesting data from repeated branches.
+"""
+
 # PROJECT 1
 import requests # Library to send HTTP requests
 from bs4 import BeautifulSoup # Library to parse HTML

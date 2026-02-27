@@ -20,6 +20,7 @@ def safe_text(parent, tag, class_name=None, default="N/A"):
     found = parent.find(tag, class_=class_name)
     # If found exists: Extract clean text. Else: Return fallback. No crash.
     return found.text.strip() if found else default # .text = get_text()
+
 # sepration of concerns
 def safe_rating(parent):
     tag = parent.find('p', class_='star-rating')
@@ -90,3 +91,175 @@ with open('books.csv', 'w', newline='', encoding='utf-8') as file:
     writer.writerows(book_data)
 
 print(f"Saved {len(book_data)} books to books.csv")
+
+"""
+Record-Oriented Scraping Model
+==============================
+
+In structured web scraping, you are not extracting data from an entire page.
+
+You are extracting fields from a repeating record container.
+
+Once the correct record-level container is identified, the DOM can be
+logically partitioned into independent subtrees where each subtree
+represents one full data unit.
+
+
+Simplified DOM Hierarchy of Books Page
+--------------------------------------
+
+html
+└── body
+    └── section
+        └── div.container
+            └── ol.row
+                ├── li
+                │    └── article.product_pod   ← one book record
+                │         ├── div.image_container
+                │         │    └── a
+                │         │         └── img
+                │         │
+                │         ├── h3
+                │         │    └── a (title="Full Book Name")
+                │         │         └── truncated visible text
+                │         │
+                │         ├── p.star-rating Three
+                │         │
+                │         └── div.product_price
+                │              ├── p.price_color
+                │              │     └── "£51.77"
+                │              │
+                │              └── p.instock availability
+                │                    └── "In stock"
+
+The repeating subtree:
+
+    <article class="product_pod">
+
+represents one complete dataset (one book).
+
+
+Container Selection
+-------------------
+
+Selecting:
+
+    books = soup.find_all('article', class_='product_pod')
+
+splits the DOM into independent record-level subtrees:
+
+    Book 1 subtree
+    Book 2 subtree
+    Book 3 subtree
+    ...
+
+Now:
+
+    for book in books:
+
+means:
+
+    Each iteration operates on ONE isolated article node.
+
+Inside the loop:
+
+    book
+
+represents:
+
+    article.product_pod
+     ├── h3
+     │    └── a (title="Full Name")
+     ├── p.star-rating
+     └── div.product_price
+          ├── p.price_color
+          └── p.instock availability
+
+All required fields now exist locally within this subtree.
+
+
+Field Extraction Logic
+----------------------
+
+Title:
+
+    book.h3.a['title']
+
+Path:
+
+    article → h3 → a → title attribute
+
+Reason:
+Visible <a> text is truncated.
+Full title is stored as metadata in the 'title' attribute.
+
+
+Price:
+
+    book.find('p', class_='price_color').text
+
+Path:
+
+    article → div.product_price → p.price_color → text node
+
+Stored as visible paragraph text.
+
+
+Availability:
+
+    book.find('p', class_='instock availability').text
+
+Path:
+
+    article → div.product_price → p.instock → text node
+
+Stored as visible paragraph text.
+
+
+Rating:
+
+    book.find('p', class_='star-rating')['class']
+
+Path:
+
+    article → p.star-rating
+
+No text node exists.
+
+Rating is encoded in the class list:
+
+    ['star-rating', 'Three']
+
+Second class represents rating value.
+
+
+Wrapper Elements
+----------------
+
+The following tags were ignored:
+
+    li
+    div.image_container
+    img
+    div.product_price
+
+Reason:
+They function as structural wrappers and do not contain target data fields.
+
+
+Scraping Strategy
+-----------------
+
+1. Identify the repeating record container.
+2. Partition the DOM into record-level subtrees.
+3. Extract only nodes that contain required field data.
+4. Ignore layout-only structural wrappers.
+
+Scraping becomes:
+
+    Field extraction from a structured DOM branch
+
+not:
+
+    Blind searching across the entire page.
+"""
