@@ -26,6 +26,16 @@ def safe_rating(parent):
         return classes[1] if len(classes) > 1 else "Unknown"
     return "Unknown"
 
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Referer': 'https://www.google.com/',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1'
+}
+
 def scrape_page(page_num) -> list: # page_num — which page to scrape (1, 2, 3, ..)
     """Scrape a single page and return book data"""
 
@@ -40,7 +50,7 @@ def scrape_page(page_num) -> list: # page_num — which page to scrape (1, 2, 3,
     # Actual Scraping
     try: # If the site doesn't respond within 10 seconds, raise a Timeout error.
         # Without timeout, if the site is slow, scraper hangs forever.
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=HEADERS, timeout=10)
 
         if response.status_code != 200: # Prevent parsing garbage.
             print(f"Failed to fetch page {page_num}. Status: {response.status_code}")

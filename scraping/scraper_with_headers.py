@@ -1,7 +1,6 @@
+# PORJECT 7
 import requests
 from bs4 import BeautifulSoup
-import json
-import time
 
 HEADERS = {
     # Identify browser type/version
