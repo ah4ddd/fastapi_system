@@ -1,18 +1,49 @@
+# APIRouter = route container, it stores endpoint
+# HTTPException = Returns errors to clients
+# status = collection of HTTP status codes
+# Depends = dependency injection
 from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+# AsyncSession is the asynchronous database session object
+# used to talk to the database without blocking the server.
+from sqlalchemy.ext.asyncio import AsyncSession # .ext means inside extension
+# translator between Python objects and SQL queries.
+# construct SQL queries using Python objects instead of raw SQL strings.
 from sqlalchemy import select
+"""
+The pipeline becomes:
+
+request arrives
+      ↓
+APIRouter matches route
+      ↓
+endpoint function runs
+      ↓
+Depends(get_db) creates DB session
+      ↓
+select() builds SQL query
+      ↓
+AsyncSession executes query
+      ↓
+database returns row
+      ↓
+response returned
+
+Every import you asked about sits in this pipeline.
+"""
+
 from app.models import ItemCreate, ItemInPublic, CreateItemResponse # type: ignore
+# ItemDB is the ORM model that represents a database table.
 from app.db_models import ItemDB # type: ignore
 from app.database import get_db # type: ignore
 
 # Rule: Anything that performs I/O (talks to the DB over network) needs await.
-
 """
 APIRouter Configuration
 prefix: Auto-prepends "/items" to all routes in this file (e.g., /items/{id}).
         Prevents repetitive path typing.
 tags: Groups these routes under an "items" header in the /docs UI.
         Purely for organizing the Swagger documentation."""
+# Think of a router like a container that collects endpoints.
 router = APIRouter(prefix="/items", tags=["items"])
 
 """db: AsyncSession = Depends(get_db)
@@ -23,13 +54,14 @@ db.add(new_item)
 Stages object for insertion.
 await db.commit()"""
 @router.post("/", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
-# Injects a database session into endpoint, calls get_db(), gets the session, injects it as 'db', ItemCreate = Pydantic model (API layer)
+# Injects a database session into endpoint, calls get_db(),
+# gets the session, injects it as 'db', ItemCreate = Pydantic model (API layer)
 async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
     """Create new item with SQLAlchemy model (DB layer) = ItemDB
     This represents:
     Database table, Columns, Rows
     This is what actually maps to PostgreSQL"""
-    new_item = ItemDB(
+    new_item = ItemDB( # ItemDB is ORM, and its job is: Map a Python class ↔ a database table
         name=item.name,
         price=item.price,
         description=item.description,
@@ -52,6 +84,7 @@ async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
         ),
         "message": f"Item '{item.name}' created successfully"
     }
+
 
 """
 How an endpoint actually works (step-by-step):
@@ -112,10 +145,12 @@ Response sent
 
 Every request gets its own session. Session closes automatically.
 """
+
+
 @router.get("/{item_id}", response_model=ItemInPublic)
 async def get_item(item_id: int, db: AsyncSession = Depends(get_db)):
     """Get single item by ID"""
-    # SELECT * FROM items WHERE id = ?; where() adds a WHERE clause to the SELECT
+    # SELECT * FROM items WHERE id = ?: where() adds a WHERE clause to the SELECT
     result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
     item = result.scalar_one_or_none() # Give me exactly one object if it exists. If nothing is found, return None
 
@@ -159,7 +194,17 @@ Engine
 @router.put("/{item_id}", response_model=ItemInPublic)
 async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = Depends(get_db)):
     """Update an existing item"""
-    result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
+    # fetching the row from the database.
+    # The AsyncSession sends that SQL to PostgreSQL
+    # The database returns rows.
+    # But SQLAlchemy wraps the result in a result object
+    result = await db.execute(select(ItemDB).where(ItemDB.id == item_id)) # SELECT * FROM items WHERE id = ?
+    # The query result may contain: 0 rows, 1 row, many rows
+    # scalar_one_or_none() means:
+        # if 0 rows → return None
+        # if 1 row → return that object
+        # if >1 rows → throw error
+    # In our case the query filters by primary key id, so only one row can exist
     existing_item = result.scalar_one_or_none()
 
     if existing_item is None:
@@ -183,6 +228,25 @@ async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = 
         price=existing_item.price,
         description=existing_item.description
     )
+"""
+So the lifecycle for UPDATE:
+Client sends PUT /items/5
+        ↓
+Query database
+        ↓
+Load ItemDB object
+        ↓
+Modify attributes
+        ↓
+SQLAlchemy marks object dirty
+        ↓
+commit()
+        ↓
+ORM generates UPDATE SQL
+        ↓
+Database updates row
+"""
+
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
@@ -199,30 +263,122 @@ async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
 
     await db.delete(item)  # Stage for deletion
     await db.commit()  # Execute DELETE query
+"""
+Lifecycle for DELETE
+Client sends DELETE /items/5
+        ↓
+Query database
+        ↓
+Load ItemDB object
+        ↓
+db.delete(item)
+        ↓
+Session marks object for deletion
+        ↓
+commit()
+        ↓
+ORM generates DELETE SQL
+        ↓
+Database removes row
+"""
+
 
 """
-Let's simulate it mentally
+ItemDB - SQLAlchemy ORM Model for the `items` Table
+===================================================
 
-Imagine FastAPI doing this:
+ItemDB is the database-layer representation of an item. It maps a Python class
+to the `items` table in PostgreSQL using SQLAlchemy's ORM system.
 
-Start request
+This model defines the table schema and is the object used by SQLAlchemy
+sessions to perform CRUD operations against the database.
 
-Call get_db()
- → creates session
- → enters async with
- → hits yield
- → pauses here
+────────────────────────────────────────────────────
+Role in the System Architecture
+────────────────────────────────────────────────────
 
-Run your endpoint with that session
+Client Request
+      ↓
+FastAPI Endpoint
+      ↓
+Pydantic Models (validation / API schema)
+      ↓
+ItemDB (ORM model)
+      ↓
+SQLAlchemy Session
+      ↓
+Database Engine
+      ↓
+PostgreSQL Table: `items`
 
-Endpoint finishes
+ItemDB acts as the bridge between Python objects and database rows.
 
-Resume get_db()
- → exit async with
- → session closes
+────────────────────────────────────────────────────
+What ItemDB Represents
+────────────────────────────────────────────────────
 
-End request
+A single instance of ItemDB corresponds to one row in the database.
 
+Example database row:
 
-This is dependency lifecycle management.
+    id = 5
+    name = "Phone"
+    price = 300
+
+Becomes the Python object:
+
+    ItemDB(id=5, name="Phone", price=300)
+
+This allows application code to work with Python objects instead of raw SQL rows.
+
+────────────────────────────────────────────────────
+How It Is Used in CRUD Operations
+────────────────────────────────────────────────────
+
+CREATE
+    new_item = ItemDB(...)
+    db.add(new_item)
+    await db.commit()
+
+READ
+    result = await db.execute(select(ItemDB))
+    items = result.scalars().all()
+
+UPDATE
+    existing_item.name = "New Name"
+    await db.commit()
+
+DELETE
+    await db.delete(existing_item)
+    await db.commit()
+
+SQLAlchemy tracks changes to ItemDB objects and automatically generates the
+appropriate SQL statements when `commit()` is called.
+
+────────────────────────────────────────────────────
+Important Notes
+────────────────────────────────────────────────────
+
+• ItemDB is NOT used for API validation or responses.
+  Those responsibilities belong to Pydantic models such as:
+      - ItemCreate
+      - ItemInPublic
+
+• ItemDB is strictly part of the database layer.
+
+• Alembic migrations read this model to generate database schema changes.
+
+────────────────────────────────────────────────────
+Mental Model
+────────────────────────────────────────────────────
+
+ItemDB = Python representation of a database row.
+
+It defines:
+    - table name
+    - columns
+    - data types
+    - constraints
+
+And enables the ORM to translate Python object operations into SQL queries.
 """

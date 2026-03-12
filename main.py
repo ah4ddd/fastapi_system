@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field #data validation and parsing library for Python
 
 #App instance
-#This object represents my entire service
+#This object represents the entire service
 app = FastAPI()
 
 items_db = []
@@ -36,8 +36,8 @@ def search_item(q: str| None = None, limit: int = 10):
         "message": f"Searching for '{q} with {limit}"}
 
 '''Defining a pydantic model (data schema + validation),
-    'class Item' follows pydantic rules'''
-#What the CLIENT sends (input)
+    'class ItemCreate' follows pydantic rules'''
+# What the CLIENT sends (input - Request Model)
 class ItemCreate(BaseModel): # base class that all Pydantic models inherit from
     #custom data structure (dict-json format)
     # Field decides what rules the input must obey once it exists
@@ -45,26 +45,26 @@ class ItemCreate(BaseModel): # base class that all Pydantic models inherit from
     price: float = Field(gt=0)
     description: str | None = Field(default=None, max_length=200) #union (replacement of 'Optional')
 
-#What lives in DATABASE (internal)
+# What lives in DATABASE (internal)
 class ItemInDB(ItemCreate):
     id: int
     #internal
     cost_price : float
     supplier_secret: str
 
-#What the CLIENT receives (output)
+# What the CLIENT receives (output - Response Model)
 class ItemInPublic(BaseModel):
     id: int
     name: str
     price: float
     description: str | None = None
 
-#Wrapper for POST response
+# Wrapper for POST final response
 class CreateItemResponse(BaseModel):
     item: ItemInPublic
     message: str
 
-#Utility function -- Searches items_db for an item with matching ID
+# Utility function -- Searches items_db for an item with matching ID
 def find_item(item_id: int) -> ItemInDB | None:
     '''search item_db and return item or None'''
     for item in items_db:
@@ -97,12 +97,12 @@ def create_item(item: ItemCreate): #validates it as ItemCreate
     } #returns json formatted string converted from stored object
 
 
-#Response is a list, and the elements inside that list follow the ItemInDB schema
+# Response is a list, and the elements inside that list follow the ItemInPublic schema
 @app.get("/items", response_model=list[ItemInPublic]) #type parameters
-def get_items() -> list[ItemInPublic]: #function intended to return 'list[ItemInPublic] '
+def get_items() -> list[ItemInPublic]: # function intended to return 'list[ItemInPublic] '
     '''
 serialized json conversion pipeline:
-ItemInDB object
+ItemInPublic object
 → item.dict()
 → Python dict
 → JSON string
@@ -122,10 +122,10 @@ def get_item(item_id: int) -> ItemInPublic:
         )
     return item # type: ignore
 
-# PUt - update an item
+# PUT - update an item
 @app.put("/items/{item_id}", response_model=ItemInPublic)
 def update_item(item_id: int, item_update: ItemCreate) -> ItemInPublic:
-    # Find the item
+    # Find the item (see if it exist)
     existing_item = find_item(item_id)
 
     if existing_item is None:

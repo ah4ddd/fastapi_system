@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 #SQLAlchemy model. It represents the items table.
+# ItemDB is the Python class that represents the "items" table,
+# and is used by SQLAlchemy to perform database operations.
 class ItemDB(Base):
     #actual table name in PostgreSQL.
     __tablename__ = "items"
@@ -22,13 +24,13 @@ class ItemDB(Base):
 ALEMBIC :
 
 Generate Initial Migration: `alembic revision --autogenerate -m "commit message"`
-revision = Create a new migration file
---autogenerate = Compare your models to the database and auto-generate the SQL
--m "commit message" = Message (like a git commit message)
+    revision = Create a new migration file
+    --autogenerate = Compare your models to the database and auto-generate the SQL
+    -m "commit message" = Message (like a git commit message)
 
 Apply the Migration : `alembic upgrade head`
-Apply all migrations up to the latest one. head = the most recent version.
-runs : ALTER TABLE items ADD COLUMN stock_quantity INTEGER NOT NULL DEFAULT 0;
+    Apply all migrations up to the latest one. head = the most recent version.
+    runs : ALTER TABLE items ADD COLUMN stock_quantity INTEGER NOT NULL DEFAULT 0;
 
 The Migration Chain (How Versions Connect):
 None
