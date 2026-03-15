@@ -4,7 +4,7 @@ from app.database import get_db # type:ignore
 from app.models import WeatherResponse # type:ignore
 from app.db_models import WeatherDB # type:ignore
 from app.services.openweather import fetch_weather # type:ignore
-from datetime import datetime, timezone
+from datetime import datetime
 
 # prefix="/weather" = all routes start with /weather
 # So @router.get("/{city}") becomes /weather/{city}
