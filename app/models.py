@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 # What the CLIENT sends (input)
 class ItemCreate(BaseModel):
@@ -24,3 +25,10 @@ class ItemInPublic(BaseModel):
 class CreateItemResponse(BaseModel):
     item: ItemInPublic
     message: str
+
+class WeatherResponse(BaseModel):
+    city: str
+    temperature: float
+    description: str
+    humidity: int
+    timestamp: datetime

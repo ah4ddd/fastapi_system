@@ -5,6 +5,9 @@ Its only job is to:
     Parse the response
     Return the result as a Python dictionary
 Nothing more. Nothing less.
+Just a tool FastAPI endpoint will use.
+
+Browser → FastAPI Endpoint → fetch_weather() → OpenWeather API
 """
 
 import httpx # async HTTP client
@@ -16,11 +19,10 @@ load_dotenv()
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
-# asynchronous function, take a city name as string, return either dict/none
+
 async def fetch_weather(city: str) -> dict | None:
     """
     Fetch weather data from OpenWeather API for a given city.
-
     Returns dict with weather data or None if request fails.
     """
     # Request parameters, these become URL query parameters
@@ -31,7 +33,7 @@ async def fetch_weather(city: str) -> dict | None:
     }
     # create HTTP client, make the Request
     async with httpx.AsyncClient() as client:
-        try: # send GET request, wait for response (wait max 10 seconds)
+        try: # send GET request, wait for response (max 10 seconds)
             response = await client.get(BASE_URL, params=params, timeout=10.0)
             # Handling Response
             if response.status_code == 200:

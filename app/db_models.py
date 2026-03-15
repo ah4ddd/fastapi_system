@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy.orm import declarative_base
 
 #Creates a base class, all database models inherit from it.
 Base = declarative_base()
@@ -19,6 +19,17 @@ class ItemDB(Base):
     supplier_secret = Column(String, nullable=False)
     stock_quantity = Column(Integer, default=0, nullable=False) # for migration
     created_at = Column(String, nullable=True)  # We'll use proper DateTime later
+
+class WeatherDB(Base):
+    # create a weather_data table in PostgreSQL
+    __tablename__ = "weather_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    city = Column(String, nullable=False)
+    temperature = Column(Float, nullable=False)
+    description = Column(String, nullable=False)
+    humidity = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
 
 """
 ALEMBIC :
