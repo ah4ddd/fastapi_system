@@ -69,7 +69,7 @@ async def fetch_user_repos(username: str) -> List[Dict] | None:
 
 def extract_top_repos(repos: List[Dict], limit: int = 10) -> List[Dict]:
     """
-    Extract top N repos by star count.
+    Extract top repos by star count.
 
     Transforms GitHub's verbose response into clean data.
     """

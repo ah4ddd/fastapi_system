@@ -37,7 +37,7 @@ class GitHubRepoDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, nullable=False, index=True)
     repo_name = Column(String, nullable=False)
-    description = Column(String)
+    description = Column(String, nullable=True)
     stars = Column(Integer, default=0)
     language = Column(String)
     url = Column(String)

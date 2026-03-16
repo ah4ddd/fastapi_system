@@ -36,7 +36,7 @@ class WeatherResponse(BaseModel):
 class GitHubRepo(BaseModel):
     """Single repository data"""
     name: str
-    description: str
+    description: str | None = None
     stars: int
     language: str
     url: str
