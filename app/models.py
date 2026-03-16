@@ -32,3 +32,20 @@ class WeatherResponse(BaseModel):
     description: str
     humidity: int
     timestamp: datetime
+
+class GitHubRepo(BaseModel):
+    """Single repository data"""
+    name: str
+    description: str
+    stars: int
+    language: str
+    url: str
+    updated_at: str
+
+
+class GitHubReposResponse(BaseModel):
+    """Response containing user's top repos"""
+    username: str
+    total_repos: int
+    top_repos: list[GitHubRepo]
+    fetched_at: str

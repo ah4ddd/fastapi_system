@@ -31,6 +31,19 @@ class WeatherDB(Base):
     humidity = Column(Integer, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
+class GitHubRepoDB(Base):
+    __tablename__ = "github_repos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, nullable=False, index=True)
+    repo_name = Column(String, nullable=False)
+    description = Column(String)
+    stars = Column(Integer, default=0)
+    language = Column(String)
+    url = Column(String)
+    updated_at = Column(String)
+    fetched_at = Column(String, nullable=False)  # When we fetched this data
+
 """
 ALEMBIC :
 
