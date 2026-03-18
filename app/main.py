@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 # Loads the items.py file.
-from app.routers import items, weather, github # type: ignore
+from app.routers import items, weather, github, crypto # type: ignore
 
 app = FastAPI( # central server object
     title="FastAPI System",
@@ -27,6 +27,7 @@ FastAPI App
 app.include_router(items.router) # items.router → APIRouter instance
 app.include_router(weather.router)
 app.include_router(github.router)
+app.include_router(crypto.router)
 
 # Root endpoints
 @app.get("/")
