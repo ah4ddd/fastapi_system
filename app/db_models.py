@@ -44,6 +44,15 @@ class GitHubRepoDB(Base):
     updated_at = Column(String)
     fetched_at = Column(String, nullable=False)  # When we fetched this data
 
+class CryptoPriceDB(Base):
+    __tablename__ = "crypto_prices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    symbol = Column(String, nullable=False, index=True)
+    price_usd = Column(Float, nullable=False)
+    change_24h = Column(Float, default=0)
+    timestamp = Column(String, nullable=False)
+
 """
 ALEMBIC :
 
