@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
+from typing import List
 
 # What the CLIENT sends (input)
 class ItemCreate(BaseModel):
@@ -47,5 +48,26 @@ class GitHubReposResponse(BaseModel):
     """Response containing user's top repos"""
     username: str
     total_repos: int
-    top_repos: list[GitHubRepo]
+    top_repos: List[GitHubRepo]
     fetched_at: str
+
+
+class CryptoPrice(BaseModel):
+    """Single crypto price data"""
+    symbol: str
+    price_usd: float
+    change_24h: float
+
+
+class CryptoPricesResponse(BaseModel):
+    """Response containing multiple crypto prices"""
+    prices: List[CryptoPrice]
+    timestamp: str
+
+
+class CryptoHistory(BaseModel):
+    """Historical price record"""
+    symbol: str
+    price_usd: float
+    change_24h: float
+    timestamp: str
