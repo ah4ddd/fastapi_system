@@ -60,7 +60,7 @@ def create_access_token(data: dict) -> str:
     # exp -- Expiration claim (standard JWT field)
     to_encode.update({"exp": expire})
 
-    # Encode JWT. Create: header.payload.signature
+    # Encode JWT. Create: header.payload.signature (JWT string)
     # Signature is created using: SECRET_KEY & algorithm (HS256)
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -115,4 +115,21 @@ JWT:
 
 Request:
     JWT → decode → trust user
+"""
+
+"""
+So what is a JWT actually?
+
+A JWT is just:
+    header.payload.signature
+
+Example:
+    abc.def.ghi
+header → algorithm info
+payload → your data (user_id, sub, exp)
+signature → proves it wasn't tampered with
+
+Key realization:
+    The user does NOT create the token.
+    Your server creates it after login.
 """
