@@ -53,7 +53,7 @@ def create_access_token(data: dict) -> str:
         Encoded JWT string
     """
 
-    to_encode = data.copy() # # So you don’t mutate original input
+    to_encode = data.copy() # So you don’t mutate original input
 
     # Add expiration time (this token dies after X minutes)
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -73,8 +73,14 @@ def decode_access_token(token: str) -> dict | None:
 
     Returns:
         Decoded payload if valid, None if invalid/expired
+
+    Validates:
+        Signature (was it created by our server?)
+        Expiration (is it still valid?)
+        Structure (is it a valid JWT?)
+    If any check fails: Returns None (token is invalid).
     """
-    try: # verifies signature, checks expiration, extracts payload
+    try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
@@ -102,11 +108,11 @@ Mental model (burn this in)
 Password → hashed → stored
 
 Login:
-password → verify → create JWT
+    password → verify → create JWT
 
 JWT:
-signed with SECRET_KEY
+    signed with SECRET_KEY
 
 Request:
-JWT → decode → trust user
+    JWT → decode → trust user
 """

@@ -53,6 +53,18 @@ class CryptoPriceDB(Base):
     change_24h = Column(Float, default=0)
     timestamp = Column(String, nullable=False)
 
+class UserDB(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    # email unique: Can't have two users with same email
+    # email index: Fast lookups when logging
+    email = Column(String, unique=True, nullable=False, index=True)
+    # hashed_password: NEVER store plain passwords
+    hashed_password = Column(String, nullable=False)
+    created_at = Column(String, nullable=False)
+
+
 """
 ALEMBIC :
 
