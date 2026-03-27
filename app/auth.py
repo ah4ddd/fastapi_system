@@ -5,7 +5,14 @@ from passlib.context import CryptContext # handle password hashing safely
 import os
 from dotenv import load_dotenv
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 load_dotenv()
+
+# Expects header: Authorization: Bearer <token>
+# Automatically extracts token from header.
+security = HTTPBearer()
 
 SECRET_KEY = os.getenv("SECRET_KEY", "")
 if not SECRET_KEY:
@@ -86,6 +93,41 @@ def decode_access_token(token: str) -> dict | None:
     except JWTError:
         return None
 
+
+# This function becomes a dependency.
+# When you add user = Depends(get_current_user) to a route:
+#    FastAPI extracts Authorization header
+#    Validates token
+#    Returns user info
+#    Or raises 401 if invalid
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """
+    Dependency to extract and validate JWT from request.
+
+    Usage:
+        @app.get("/protected")
+        async def protected_route(user: dict = Depends(get_current_user)):
+            return {"user": user}
+
+    Returns:
+        Decoded JWT payload (contains user info)
+
+    Raises:
+        401 if token is missing, invalid, or expired
+    """
+
+    token = credentials.credentials
+
+    payload = decode_access_token(token)
+
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return payload
 
 """
 Full system flow (connect everything)

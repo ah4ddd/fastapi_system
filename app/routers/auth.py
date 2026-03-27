@@ -14,7 +14,7 @@ from app.models import UserSignup, UserLogin, Token, UserResponse # type: ignore
 # Actual db table model. UserDB = DB structure. UserSignup = API input
 from app.db_models import UserDB # type: ignore
 # Auth logic
-from app.auth import hash_password, verify_password, create_access_token # type: ignore
+from app.auth import hash_password, verify_password, create_access_token, get_current_user # type: ignore
 from datetime import datetime
 
 # All routes start with /auth = /signup → /auth/signup → /auth/login
@@ -100,6 +100,32 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
 
     # Client store this and send it later
     return Token(access_token=access_token, token_type="bearer")
+
+# The dependency (Depends(get_current_user)) does ALL the validation
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    """
+    Get current user's info.
+
+    PROTECTED ROUTE: Requires valid JWT token.
+    """
+
+    # user contains decoded JWT payload
+    email = user.get("sub")
+
+    # Fetch full user from database
+    query = select(UserDB).where(UserDB.email == email)
+    result = await db.execute(query)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserResponse(
+        id=db_user.id,
+        email=db_user.email,
+        created_at=db_user.created_at
+    )
 
 
 """
