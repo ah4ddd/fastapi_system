@@ -22,7 +22,12 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def signup(user: UserSignup, db: AsyncSession = Depends(get_db)):
+# Request arrives (HTTP layer)
+# FastAPI:
+#    parses JSON
+#    validates using UserSignup
+#    gives user.email, user.password
+async def signu0p(user: UserSignup, db: AsyncSession = Depends(get_db)):
     """
     Create a new user account.
 
@@ -32,6 +37,12 @@ async def signup(user: UserSignup, db: AsyncSession = Depends(get_db)):
     """
 
     # Check if user already exists
+
+    # SELECT * FROM users WHERE email = 'ahad@example.com'
+    # DB execute it
+    #    return:
+    #        row → if exist
+    #        None → if not
     query = select(UserDB).where(UserDB.email == user.email)
     result = await db.execute(query)
     existing_user = result.scalar_one_or_none() # Returns ONE result or None
@@ -42,7 +53,7 @@ async def signup(user: UserSignup, db: AsyncSession = Depends(get_db)):
             detail="Email already registered"
         )
 
-    # Plain → bcrypt hash (preparing a row to insert)
+    # Plain → bcrypt hash `return pwd_context.hash(password)``
     hashed_pw = hash_password(user.password)
 
     # Create user DB object
@@ -87,6 +98,7 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
 
     # Verify password. If password is NOT correct → reject login
     # It’s not stored. It's just: True / False check
+    # inside verify = pwd_context.verify(plain, hash)
     if not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -159,4 +171,51 @@ Brutal clarity (no confusion left)
     verify_password → returns True/False
     if not → means “if incorrect”
     Token is proof of identity after login
+"""
+
+
+"""
+Burn this in:
+    The server doesn't remember the token.
+    It recomputes the signature using its SECRET_KEY and checks if it matches.
+"""
+
+"""
+WHAT BCRYPT ACTUALLY DOES (low-level)
+
+Let's go deep.
+
+Input:
+    password = "password"
+Step 1: Generate random salt
+    salt = random_bytes(16)
+
+Example:
+    $2b$12$WV3a7pQn4A7zycXbkSEdfu
+
+Step 2: Combine password + salt
+
+Not simple concatenation — bcrypt does:
+    hash = bcrypt(password, salt, cost=12)
+
+Step 3: Run through expensive hashing loop
+
+Internally:
+    Blowfish-based key expansion
+    repeated 2^12 times (cost factor)
+
+    This is intentionally slow to stop brute force
+
+Output:
+    $2b$12$WV3a7pQn4A7zycXbkSEdfu51wGUrQZsCi9m8iGgvtRla.JXqN3DkC
+
+This string contains:
+    algorithm (2b)
+    cost (12)
+    salt
+    hash
+
+salt = random once
+hash = deterministic function(password + salt)
+verify = recompute + compare
 """

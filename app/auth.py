@@ -74,6 +74,8 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 
+# Given the same inputs, these functions always produce the same output.
+#    (bcrypt with a fixed salt, HMAC with a fixed key)
 def decode_access_token(token: str) -> dict | None:
     """
     Decode and validate a JWT token.
@@ -105,7 +107,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     Dependency to extract and validate JWT from request.
 
     Usage:
-        @app.get("/protected")
+        @app.get("/auth/me")
         async def protected_route(user: dict = Depends(get_current_user)):
             return {"user": user}
 
@@ -174,4 +176,23 @@ signature → proves it wasn't tampered with
 Key realization:
     The user does NOT create the token.
     Your server creates it after login.
+"""
+
+"""
+Password auth:
+Signup:
+    salt = random
+    hash = bcrypt(password, salt)
+
+Login:
+    extract salt
+    recompute hash
+    compare
+JWT auth:
+Create:
+    signature = HMAC(data, SECRET_KEY)
+
+Validate:
+    recompute signature
+    compare
 """
