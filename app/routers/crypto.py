@@ -5,6 +5,7 @@ from app.database import get_db # type: ignore
 from app.models import CryptoPricesResponse, CryptoPrice, CryptoHistory # type: ignore
 from app.db_models import CryptoPriceDB # type: ignore
 from app.services.coingecko import fetch_crypto_prices, transform_price_data # type: ignore
+from app.auth import get_current_user # type: ignore
 from datetime import datetime
 from typing import List
 
@@ -99,6 +100,42 @@ async def get_price_history(symbol: str, db: AsyncSession = Depends(get_db)):
         )
 
     # Convert to response models (list comprehension)
+    history = [
+        CryptoHistory(
+            symbol=record.symbol,
+            price_usd=record.price_usd,
+            change_24h=record.change_24h,
+            timestamp=record.timestamp
+        )
+        for record in records
+    ]
+
+    return history
+
+@router.get("/my-history", response_model=List[CryptoHistory])
+async def get_my_crypto_history(
+    user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)):
+    """
+    Get crypto prices I've fetched.
+
+    PROTECTED: Requires login.
+
+    (For now, returns all data. Later, filter by user.)
+    """
+
+    query = (
+        select(CryptoPriceDB)
+        .order_by(CryptoPriceDB.timestamp.desc())
+        .limit(50)
+    )
+
+    result = await db.execute(query)
+    records = result.scalars().all()
+
+    if not records:
+        return []
+
     history = [
         CryptoHistory(
             symbol=record.symbol,
