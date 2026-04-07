@@ -102,12 +102,13 @@ def decode_access_token(token: str) -> dict | None:
 #    Validates token
 #    Returns user info
 #    Or raises 401 if invalid
+# A verification function that checks the token and returns user info
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     """
     Dependency to extract and validate JWT from request.
 
     Usage:
-        @app.get("/auth/me")
+        @app.get("/protected route")
         async def protected_route(user: dict = Depends(get_current_user)):
             return {"user": user}
 
@@ -195,4 +196,27 @@ Create:
 Validate:
     recompute signature
     compare
+"""
+
+"""
+Request
+  ↓
+Depends → runs get_current_user
+  ↓
+decode JWT using SECRET_KEY
+  ↓
+IF valid → return user
+IF invalid → 401
+  ↓
+Route runs (or not)
+
+----------------------------------
+
+[Cryptography] → provides security
+        ↓
+[get_current_user] → uses it
+        ↓
+[Depends] → enforces it
+        ↓
+[Route] → gets protected
 """

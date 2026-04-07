@@ -54,7 +54,7 @@ async def get_crypto_prices(db: AsyncSession = Depends(get_db)):
     await db.commit()
 
     # Build response
-    # create objects, not modifies data
+    # create objects, not modifie data
     # It runs once per coin → builds a list
     # API → currently static, not dynamic
     price_models = [CryptoPrice(**price) for price in prices]
@@ -113,11 +113,13 @@ async def get_price_history(symbol: str, db: AsyncSession = Depends(get_db)):
     return history
 
 @router.get("/my-history", response_model=List[CryptoHistory])
+# Before running this function, run get_current_user
+# Depends() runs a function before route and injects its result.
 async def get_my_crypto_history(
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)):
     """
-    Get crypto prices I've fetched.
+    Get fetched crypto prices.
 
     PROTECTED: Requires login.
 
