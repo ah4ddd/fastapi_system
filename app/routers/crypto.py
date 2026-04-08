@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from fastapi import Query
 from app.database import get_db # type: ignore
 from app.models import CryptoPricesResponse, CryptoPrice, CryptoHistory # type: ignore
 from app.db_models import CryptoPriceDB # type: ignore
@@ -11,11 +12,10 @@ from typing import List
 
 router = APIRouter(prefix="/crypto", tags=["crypto"])
 
-
-@router.get("/prices", response_model=CryptoPricesResponse)
-async def get_crypto_prices(db: AsyncSession = Depends(get_db)):
+@router.get("/latest", response_model=CryptoPricesResponse)
+async def get_top_crypto_prices(limit: int = Query(5, ge=1, le=5), db: AsyncSession = Depends(get_db)):
     """
-    Fetch current prices for Bitcoin, Ethereum, and Solana.
+    Fetch current prices for top coins (HARDCODED).
 
     - Fetches from CoinGecko API
     - Stores in database for historical tracking
@@ -23,7 +23,8 @@ async def get_crypto_prices(db: AsyncSession = Depends(get_db)):
     """
 
     # Coins to track
-    coin_ids = ["bitcoin", "ethereum", "solana"]
+    coin_ids = ["bitcoin", "ethereum", "solana", "tether", "ripple"]
+    coin_ids = coin_ids[:limit]
 
     # Fetch from CoinGecko
     raw_data = await fetch_crypto_prices(coin_ids)
@@ -64,9 +65,52 @@ async def get_crypto_prices(db: AsyncSession = Depends(get_db)):
         timestamp=timestamp
     )
 
+
+@router.get("/prices/{coin_id}")
+async def get_crypto_prices(coin_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Fetch current prices via path parameter.
+
+    - Fetches from CoinGecko API
+    - Stores in database for historical tracking
+    - Returns current prices with 24h change
+    """
+
+    # Fetch from CoinGecko
+    raw_data = await fetch_crypto_prices([coin_id])
+
+    if not raw_data:
+        raise HTTPException(
+            status_code=503,
+            detail="Could not fetch crypto prices. API may be down or rate limited."
+        )
+
+    # Transform data
+    prices = transform_price_data(raw_data)
+
+    # Current timestamp
+    timestamp = datetime.utcnow().isoformat()
+
+    # Store in database
+    price = prices[0]
+    db_price = CryptoPriceDB(
+        symbol=price["symbol"],
+        price_usd=price["price_usd"],
+        change_24h=price["change_24h"],
+        timestamp=timestamp
+        )
+
+    db.add(db_price)
+    await db.commit()
+
+    return {
+        "price": price,
+        "timestamp": timestamp
+    }
+
 # This endpoint reads from database, not CoinGecko.
-@router.get("/history/{symbol}", response_model=List[CryptoHistory])
-async def get_price_history(symbol: str, db: AsyncSession = Depends(get_db)):
+@router.get("/history", response_model=List[CryptoHistory])
+async def get_price_history(symbol: str, limit: int, db: AsyncSession = Depends(get_db)):
     """
     Get historical price data for a cryptocurrency from database.
 
@@ -79,7 +123,7 @@ async def get_price_history(symbol: str, db: AsyncSession = Depends(get_db)):
         select(CryptoPriceDB) # “SELECT * FROM crypto_prices
         .where(CryptoPriceDB.symbol == symbol) # WHERE symbol = 'bitcoin'
         .order_by(CryptoPriceDB.timestamp.desc()) # ORDER BY timestamp DESC
-        .limit(100) # LIMIT 100 (only latest 100)
+        .limit(limit) # LIMIT 100 (how much of history user wants to see)
     )
 
     # wrapper object (send query to DB)
@@ -116,6 +160,7 @@ async def get_price_history(symbol: str, db: AsyncSession = Depends(get_db)):
 # Before running this function, run get_current_user
 # Depends() runs a function before route and injects its result.
 async def get_my_crypto_history(
+    limit: int,
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)):
     """
@@ -129,7 +174,7 @@ async def get_my_crypto_history(
     query = (
         select(CryptoPriceDB)
         .order_by(CryptoPriceDB.timestamp.desc())
-        .limit(50)
+        .limit(limit)
     )
 
     result = await db.execute(query)
