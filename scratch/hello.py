@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from enum import Enum
 from pydantic import BaseModel
+from fastapi import Query
+from typing import Annotated
+
 
 app = FastAPI()
 
@@ -38,15 +41,12 @@ async def get_model(model_name: ModelName):
 
 fake_items_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
 
-@app.get("/items/")
-async def read_items(skip: int = 0, limit: int = 10):
-    return fake_items_db[skip:  skip + limit]
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: str, q: str | None = None, short: bool = False):
+@app.get("/items/")
+async def read_item(q: Annotated[list[str] | None, Query(title="Query string", description="Query string for the items to search in the database that have a good match", min_length=3, max_length=50) ] = ["me", "her"]):
     if q:
-        return {"item_id": item_id, "q": q}
-    return {"item_id": item_id}
+        return {"item": fake_items_db, "q": q}
+    return {"item": fake_items_db}
 
 @app.post("/items/{item_id}")
 async def create_item(item_id: int, item: Item, q: str | None = None):
