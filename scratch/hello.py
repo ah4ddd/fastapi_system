@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from enum import Enum
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -12,6 +13,14 @@ class ModelName(str, Enum):
     alexnet = "alexnet"
     resnet = "resnet"
     lenet = "lenet"
+
+
+class Item(BaseModel):
+    name: str
+    description: str
+    price: float
+    tax: float | None = None
+    supplier: str | None = None
 
 # Order matters
 # The first one will always be used since the path matches first.
@@ -38,6 +47,16 @@ async def read_item(item_id: str, q: str | None = None, short: bool = False):
     if q:
         return {"item_id": item_id, "q": q}
     return {"item_id": item_id}
+
+@app.post("/items/{item_id}")
+async def create_item(item_id: int, item: Item, q: str | None = None):
+    item_dict = item.model_dump()
+    if item.tax is not None:
+        price_with_tax = item.price + item.tax
+        item_dict.update({"price_with_tax": price_with_tax})
+    if q:
+        item_dict.update({"q": q})
+    return {"item_id": item_id, **item_dict}
 
 
 @app.get("/users/{user_id}/items/{item_id}")
