@@ -43,7 +43,12 @@ fake_items_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
 
 
 @app.get("/items/")
-async def read_item(q: Annotated[list[str] | None, Query(title="Query string", description="Query string for the items to search in the database that have a good match", min_length=3, max_length=50) ] = ["me", "her"]):
+async def read_item(q: Annotated[list[str] | None, Query(title="Query string",
+                                                         description="Query string for the items to search in the database that have a good match",
+                                                         alias="item-query",
+                                                         pattern="^[a-z0-9-]+$",
+                                                         deprecated=False,
+                                                         min_length=3, max_length=50) ] = ["me", "her"]):
     if q:
         return {"item": fake_items_db, "q": q}
     return {"item": fake_items_db}
