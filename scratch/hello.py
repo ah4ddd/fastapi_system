@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query, Path
 from enum import Enum
-from pydantic import BaseModel
-from fastapi import Query
+from pydantic import BaseModel, AfterValidator
 from typing import Annotated
+import random
+
 
 
 app = FastAPI()
@@ -24,6 +25,27 @@ class Item(BaseModel):
     price: float
     tax: float | None = None
     supplier: str | None = None
+
+data = {
+    "isbn-9781529046137": "The Hitchhiker's Guide to the Galaxy",
+    "imdb-tt0371724": "The Hitchhiker's Guide to the Galaxy",
+    "isbn-9781439512982": "Isaac Asimov: The Complete Stories, Vol. 2",
+}
+
+def check_valid_id(id: str):
+    if not id.startswith(("isbn-", "imdb-")):
+        raise ValueError('Invalid ID format, it must start with "isbn-" or "imdb-"')
+    return id
+
+@app.get("/films/")
+async def read_items(
+    id: Annotated[str | None, AfterValidator(check_valid_id)] = None,
+):
+    if id:
+        film = data.get(id)
+    else:
+        id, film = random.choice(list(data.items()))
+    return {"id": id, "name": film}
 
 # Order matters
 # The first one will always be used since the path matches first.
