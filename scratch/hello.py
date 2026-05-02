@@ -20,10 +20,12 @@ class ModelName(str, Enum):
 
 class Item(BaseModel):
     name: str
-    description: str
-    price: float
-    tax: float | None = None
-    supplier: str | None = None
+    description: str = Field(description="The description of the item",
+                             max_length=300,
+                             min_length=10)
+    price: float = Field(gt=0)
+    tax: float | None = Field(None, gt=0, lt=40)
+    supplier: str | None = Field(None, min_length=3, max_length=20)
 
 
 data = {
