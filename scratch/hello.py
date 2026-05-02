@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path
+from fastapi import FastAPI, Query, Path, Body
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field
 from typing import Annotated, Literal
@@ -87,10 +87,16 @@ async def read_item(q: Annotated[list[str] | None, Query(title="Query string",
         return {"item": fake_items_db, "q": q}
     return {"item": fake_items_db}
 
+class User(BaseModel):
+    username: str
+    full_name: str | None = None
+
 @app.post("/items/{item_id}")
 async def create_item(item_id: Annotated[int, Path(title="The ID of the item to get")],
-                      item: Item,
+                      item: Annotated[Item, Body(embed=True)],
+                      user: User,
                       size: Annotated[float, Query(gt=0, le=10)],
+                      importance: Annotated[int, Body()],
                       q: Annotated[str | None, Query(alias="item-query")] = None):
     item_dict = item.model_dump()
     if item.tax is not None:
@@ -98,7 +104,11 @@ async def create_item(item_id: Annotated[int, Path(title="The ID of the item to 
         item_dict.update({"price_with_tax": price_with_tax})
     if q:
         item_dict.update({"q": q})
-    return {"item_id": item_id, "size": size, **item_dict}
+    return {"item_id": item_id,
+            "user": user,
+            "size": size,
+            "importance": importance,
+            **item_dict}
 
 
 @app.get("/users/{user_id}/items/{item_id}")
