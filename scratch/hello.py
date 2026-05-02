@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query, Path
 from enum import Enum
-from pydantic import BaseModel, AfterValidator
-from typing import Annotated
+from pydantic import BaseModel, AfterValidator, Field
+from typing import Annotated, Literal
 import random
 
 
@@ -24,6 +24,7 @@ class Item(BaseModel):
     price: float
     tax: float | None = None
     supplier: str | None = None
+
 
 data = {
     "isbn-9781529046137": "The Hitchhiker's Guide to the Galaxy",
@@ -60,8 +61,20 @@ async def get_model(model_name: ModelName):
     return {"model_name": model_name, "message": "have some residuals"}
 
 
-fake_items_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
+class FilterParameter(BaseModel):
+    model_config = {"extra": "forbid"}
 
+    limit : int = Field(100, gt=0, le=100)
+    offset: int = Field(0, ge=0)
+    order_by: Literal["created_at", "updated_at"] = "created_at"
+    tags: list[str] = []
+
+@app.get("/filtered-items")
+async def f_item(filter_query: Annotated[FilterParameter, Query()]):
+    return filter_query
+
+
+fake_items_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
 
 @app.get("/items/")
 async def read_item(q: Annotated[list[str] | None, Query(title="Query string",
