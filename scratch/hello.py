@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query, Path, Body
 from enum import Enum
-from pydantic import BaseModel, AfterValidator, Field
+from pydantic import BaseModel, AfterValidator, Field, HttpUrl
 from typing import Annotated, Literal
 import random
 
@@ -18,6 +18,14 @@ class ModelName(str, Enum):
     lenet = "lenet"
 
 
+class Image(BaseModel):
+    url: HttpUrl
+    name: str
+
+@app.post("/images/multiple/")
+async def create_multiple_images(images: list[Image]):
+    return images
+
 class Item(BaseModel):
     name: str
     description: str = Field(description="The description of the item",
@@ -26,6 +34,18 @@ class Item(BaseModel):
     price: float = Field(gt=0)
     tax: float | None = Field(None, gt=0, lt=40)
     supplier: str | None = Field(None, min_length=3, max_length=20)
+    images: list[Image]  | None = None
+
+class Offer(BaseModel):
+    name: str
+    description: str | None = None
+    price: float
+    items: list[Item]
+
+
+@app.post("/offers/")
+async def create_offer(offer: Offer):
+    return offer
 
 
 data = {
@@ -69,7 +89,7 @@ class FilterParameter(BaseModel):
     limit : int = Field(100, gt=0, le=100)
     offset: int = Field(0, ge=0)
     order_by: Literal["created_at", "updated_at"] = "created_at"
-    tags: list[str] = []
+    tags: set[str] = set()
 
 @app.get("/filtered-items")
 async def f_item(filter_query: Annotated[FilterParameter, Query()]):
