@@ -2,6 +2,8 @@ from fastapi import FastAPI, Query, Path, Body
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl
 from typing import Annotated, Literal
+from datetime import datetime, time, timedelta
+from uuid import UUID
 import random
 
 
@@ -19,22 +21,29 @@ class ModelName(str, Enum):
 
 
 class Image(BaseModel):
-    url: HttpUrl
-    name: str
+    url: HttpUrl = Field(examples=["https://pin.it/1Gh7RZrSl"])
+    name: str = Field("just Name")
+
+class User(BaseModel):
+    username: str = Field(examples=["Seeyaah"])
+    full_name: str | None = Field(None, examples= ["Fill yourself"])
 
 @app.post("/images/multiple/")
 async def create_multiple_images(images: list[Image]):
     return images
 
 class Item(BaseModel):
-    name: str
+    name: str = Field(examples=["Sia"])
     description: str = Field(description="The description of the item",
                              max_length=300,
-                             min_length=10)
-    price: float = Field(gt=0)
-    tax: float | None = Field(None, gt=0, lt=40)
-    supplier: str | None = Field(None, min_length=3, max_length=20)
-    images: list[Image]  | None = None
+                             min_length=10,
+                             examples=["Nice Item"])
+    price: float = Field(gt=0, examples=[99999.99])
+    tax: float | None = Field(None, gt=0, lt=40, examples=[3.9])
+    supplier: str | None = Field(None, min_length=3,
+                                 max_length=20,
+                                 examples= ["Ahad"])
+    images: list[Image]  | None
 
 class Offer(BaseModel):
     name: str
@@ -46,6 +55,11 @@ class Offer(BaseModel):
 @app.post("/offers/")
 async def create_offer(offer: Offer):
     return offer
+
+
+@app.post("/index-weights/")
+async def create_index_weights(weights: dict[int, float]):
+    return weights
 
 
 data = {
@@ -95,6 +109,25 @@ class FilterParameter(BaseModel):
 async def f_item(filter_query: Annotated[FilterParameter, Query()]):
     return filter_query
 
+@app.put("/time/{time_id}/")
+async def read_time(
+    time_id: UUID,
+    start_datetime: Annotated[datetime, Body()],
+    end_datetime: Annotated[datetime, Body()],
+    process_after: Annotated[timedelta, Body()],
+    repeat_at: Annotated[time | None, Body()] = None,
+):
+    start_process = start_datetime + process_after
+    duration = end_datetime - start_process
+    return{
+        "time_id": time_id,
+        "start_datetime": start_datetime,
+        "end_datetime": end_datetime,
+        "process_after": process_after,
+        "repeat_at": repeat_at,
+        "start_process": start_process,
+        "duration": duration,
+    }
 
 fake_items_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
 
@@ -109,9 +142,6 @@ async def read_item(q: Annotated[list[str] | None, Query(title="Query string",
         return {"item": fake_items_db, "q": q}
     return {"item": fake_items_db}
 
-class User(BaseModel):
-    username: str
-    full_name: str | None = None
 
 @app.post("/items/{item_id}")
 async def create_item(item_id: Annotated[int, Path(title="The ID of the item to get")],
