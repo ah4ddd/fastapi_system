@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path, Body
+from fastapi import FastAPI, Query, Path, Body, Cookie
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl
 from typing import Annotated, Literal
@@ -46,15 +46,16 @@ class Item(BaseModel):
     images: list[Image]  | None
 
 class Offer(BaseModel):
-    name: str
-    description: str | None = None
-    price: float
+    name: str = Field(examples=["Div"])
+    description: str | None  = Field(None, examples=["good description"])
+    price: float = Field(examples=[7.5])
     items: list[Item]
 
 
 @app.post("/offers/")
-async def create_offer(offer: Offer):
-    return offer
+async def create_offer(offer: Offer,
+                       ads_id: Annotated[str | None, Cookie()] = None):
+    return {"offer": offer, "ads_id": ads_id}
 
 
 @app.post("/index-weights/")
