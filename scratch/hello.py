@@ -52,15 +52,23 @@ class Offer(BaseModel):
     items: list[Item]
 
 class Cookies(BaseModel):
+    model_config = {"extra": "forbid"}
     session_id: str
     fatebook_db: str | None = None
     googall_tracker: str | None = None
 
+class CommonHeaders(BaseModel):
+    host: str
+    save_data: bool
+    if_modified_since: str | None = None
+    traceparent: str | None = None
+    x_tag: list[str] = []
+
 
 @app.post("/offers/")
 async def create_offer(offer: Offer,
-                       cookies: Annotated[Cookies | None, Cookie()] = None,
-                       user_agent: Annotated[str | None, Header()] = None):
+                       user_agent: Annotated[CommonHeaders, Header()],
+                       cookies: Annotated[Cookies | None, Cookie()] = None):
     return {"offer": offer, "cookies": cookies, "user_agent": user_agent}
 
 
