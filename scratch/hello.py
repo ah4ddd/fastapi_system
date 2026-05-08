@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 from enum import Enum
-from pydantic import BaseModel, AfterValidator, Field, HttpUrl
+from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
 from typing import Annotated, Literal
 from datetime import datetime, time, timedelta
 from uuid import UUID
@@ -74,8 +74,24 @@ async def create_offer(offer: Offer,
 
 
 @app.post("/index-weights/")
-async def create_index_weights(weights: dict[int, float]):
+async def create_index_weights(weights: dict[int, float]) -> dict:
     return weights
+
+class UserIn(BaseModel):
+    username: str
+    password: str
+    email: EmailStr
+    full_name: str | None = None
+
+class UserOut(BaseModel):
+    username: str
+    email: EmailStr
+    full_name: str | None = None
+
+#dont fuck this in prod
+@app.post("/user/", response_model=UserOut)
+async def create_user(user: UserIn):
+    return user
 
 
 data = {
@@ -122,7 +138,7 @@ class FilterParameter(BaseModel):
     tags: set[str] = set()
 
 @app.get("/filtered-items")
-async def f_item(filter_query: Annotated[FilterParameter, Query()]):
+async def f_item(filter_query: Annotated[FilterParameter, Query()]) -> FilterParameter:
     return filter_query
 
 @app.put("/time/{time_id}/")
