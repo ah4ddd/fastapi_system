@@ -58,6 +58,7 @@ class Cookies(BaseModel):
     googall_tracker: str | None = None
 
 class CommonHeaders(BaseModel):
+    model_config = {"extra": "forbid"}
     host: str
     save_data: bool
     if_modified_since: str | None = None
@@ -67,9 +68,9 @@ class CommonHeaders(BaseModel):
 
 @app.post("/offers/")
 async def create_offer(offer: Offer,
-                       user_agent: Annotated[CommonHeaders, Header()],
+                       header: Annotated[CommonHeaders, Header()],
                        cookies: Annotated[Cookies | None, Cookie()] = None):
-    return {"offer": offer, "cookies": cookies, "user_agent": user_agent}
+    return {"offer": offer, "cookies": cookies, "header": header}
 
 
 @app.post("/index-weights/")
