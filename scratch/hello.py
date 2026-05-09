@@ -105,7 +105,7 @@ def fake_save_user(user_in: UserIn):
     return user_in_db
 
 #dont fuck this in prod
-@app.post("/user/", response_model=UserOut)
+@app.post("/user/", response_model=UserOut, status_code=201)
 async def create_user(user_in: UserIn) -> Any:
     user_saved = fake_save_user(user_in)
     return user_saved
