@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query, Path, Body, Cookie, Header
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from datetime import datetime, time, timedelta
 from uuid import UUID
 import random
@@ -77,10 +77,13 @@ async def create_offer(offer: Offer,
 async def create_index_weights(weights: dict[int, float]) -> dict:
     return weights
 
-class UserIn(BaseModel):
+
+class BaseUser(BaseModel):
     username: str
-    password: str
     email: EmailStr
+
+class UserIn(BaseUser):
+    password: str
     full_name: str | None = None
 
 class UserOut(BaseModel):
@@ -90,7 +93,7 @@ class UserOut(BaseModel):
 
 #dont fuck this in prod
 @app.post("/user/", response_model=UserOut)
-async def create_user(user: UserIn):
+async def create_user(user: UserIn) -> Any:
     return user
 
 
