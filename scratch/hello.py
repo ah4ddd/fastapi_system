@@ -78,18 +78,39 @@ async def create_index_weights(weights: dict[int, float]) -> dict:
     return weights
 
 
-class BaseUser(BaseModel):
+class UserIn(BaseModel):
+    username: str
+    password: str
+    email: EmailStr
+    full_name: str | None = None
+
+
+class UserOut(BaseModel):
     username: str
     email: EmailStr
     full_name: str | None = None
 
-class UserIn(BaseUser):
-    password: str
+
+class UserInDB(BaseModel):
+    username: str
+    hashed_password: str
+    email: EmailStr
+    full_name: str | None = None
+
+def fake_pw_hash(raw_password: str):
+    return "supersecret" + raw_password
+
+def fake_save_user(user_in: UserIn):
+    hashed_password = fake_pw_hash(user_in.password)
+    user_in_db = UserInDB(**user_in.model_dump(), hashed_password=hashed_password)
+    print("User saved! ..not really")
+    return user_in_db
 
 #dont fuck this in prod
-@app.post("/user/", response_model=BaseUser)
-async def create_user(user: UserIn) -> BaseUser:
-    return user
+@app.post("/user/", response_model=UserOut)
+async def create_user(user_in: UserIn) -> Any:
+    user_saved = fake_save_user(user_in)
+    return user_saved
 
 
 data = {
