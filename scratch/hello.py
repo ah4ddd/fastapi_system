@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
 from typing import Annotated, Any, Literal
@@ -66,7 +66,7 @@ class CommonHeaders(BaseModel):
     x_tag: list[str] = []
 
 
-@app.post("/offers/")
+@app.post("/offers/", status_code=status.HTTP_201_CREATED)
 async def create_offer(offer: Offer,
                        header: Annotated[CommonHeaders, Header()],
                        cookies: Annotated[Cookies | None, Cookie()] = None):
