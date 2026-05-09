@@ -81,19 +81,14 @@ async def create_index_weights(weights: dict[int, float]) -> dict:
 class BaseUser(BaseModel):
     username: str
     email: EmailStr
+    full_name: str | None = None
 
 class UserIn(BaseUser):
     password: str
-    full_name: str | None = None
-
-class UserOut(BaseModel):
-    username: str
-    email: EmailStr
-    full_name: str | None = None
 
 #dont fuck this in prod
-@app.post("/user/", response_model=UserOut)
-async def create_user(user: UserIn) -> Any:
+@app.post("/user/", response_model=BaseUser)
+async def create_user(user: UserIn) -> BaseUser:
     return user
 
 
