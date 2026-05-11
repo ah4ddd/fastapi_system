@@ -82,10 +82,12 @@ async def create_index_weights(weights: dict[int, float]) -> dict:
 async def create_file(file: Annotated[bytes, File(),],
                       fileb: Annotated[UploadFile, File()],
                       token: Annotated[str, Form()],
+                      caption: Annotated[str, Form()],
                       ):
     return {"file_size": len(file),
             "token": token,
-            "file_content_type": fileb.content_type}
+            "file_content_type": fileb.content_type,
+            "caption": caption}
 
 @app.post("/upload-file/")
 async def create_upload_file(file: UploadFile):
