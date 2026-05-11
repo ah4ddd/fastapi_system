@@ -5,7 +5,6 @@ from typing import Annotated, Any, Literal
 from datetime import datetime, time, timedelta
 from uuid import UUID
 import random
-from fastapi.responses import HTMLResponse
 
 
 app = FastAPI()
