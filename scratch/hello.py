@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
 from typing import Annotated, Any, Literal
 from datetime import datetime, time, timedelta
 from uuid import UUID
 import random
+from fastapi.responses import HTMLResponse
 
 
 app = FastAPI()
@@ -76,6 +77,15 @@ async def create_offer(offer: Offer,
 @app.post("/index-weights/")
 async def create_index_weights(weights: dict[int, float]) -> dict:
     return weights
+
+@app.post("/file/")
+async def create_file(file: Annotated[bytes,
+                                      File(description="A file read as bytes")]):
+    return {"file_size": len(file)}
+
+@app.post("/upload-file/")
+async def create_upload_file(file: UploadFile):
+    return {"filename": file.filename}
 
 
 class UserBase(BaseModel):
