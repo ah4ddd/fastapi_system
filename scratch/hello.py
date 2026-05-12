@@ -61,11 +61,14 @@ games = {
     "gow3": "God of war 3",
     }
 
-
 @app.get("/games/{game_id}")
 async def read_game(game_id: str):
     if game_id not in games:
-        raise HTTPException(status_code=404, detail="Game not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Game not found",
+            headers={"Error": "There goes my error"},
+                            )
     return {"your_game": games[game_id]}
 
 class Cookies(BaseModel):
