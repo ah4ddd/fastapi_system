@@ -38,6 +38,9 @@ class UnicornException(Exception):
         self.name = name
 
 # global handler for UnicornException.
+# the same concept as route() but for exceptions,
+# instead of routes. When THIS exception gets raised anywhere
+# in the app, run this function instead of crashing.
 @app.exception_handler(UnicornException)
 async def unicorn_exception_handler(request: Request, exc: UnicornException):
     return JSONResponse(
@@ -47,7 +50,7 @@ async def unicorn_exception_handler(request: Request, exc: UnicornException):
 
 @app.get("/unicorns/{name}")
 async def read_unicorn(name:str):
-    if name == "sara":
+    if name == "siya":
         raise UnicornException(name=name)
     return {"unicorn_name": name}
 
