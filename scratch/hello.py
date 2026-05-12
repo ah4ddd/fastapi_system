@@ -55,6 +55,19 @@ class Offer(BaseModel):
 async def create_offer(offers: Offer):
     return {"offers": offers}
 
+
+games = {
+    "mgsv": "Phantom Pain",
+    "gow3": "God of war 3",
+    }
+
+
+@app.get("/games/{game_id}")
+async def read_game(game_id: str):
+    if game_id not in games:
+        raise HTTPException(status_code=404, detail="Game not found")
+    return {"your_game": games[game_id]}
+
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
     session_id: str
