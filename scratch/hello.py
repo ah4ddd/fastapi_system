@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile, HTTPException
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
 from typing import Annotated, Any, Literal
@@ -48,8 +48,12 @@ class Item(BaseModel):
 class Offer(BaseModel):
     name: str = Field(examples=["Div"])
     description: str | None  = Field(None, examples=["good description"])
-    price: float = Field(examples=[7.5])
+    price: float = Field(gt=0, examples=[7.5])
     items: list[Item]
+
+@app.post("/offers")
+async def create_offer(offers: Offer):
+    return {"offers": offers}
 
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
@@ -66,11 +70,13 @@ class CommonHeaders(BaseModel):
     x_tag: list[str] = []
 
 
-@app.post("/offers/", status_code=status.HTTP_201_CREATED)
-async def create_offer(offer: Offer,
-                       header: Annotated[CommonHeaders, Header()],
+@app.post("/cookie-header/", status_code=status.HTTP_201_CREATED)
+async def create_cookie_header(header: Annotated[CommonHeaders, Header()],
                        cookies: Annotated[Cookies | None, Cookie()] = None):
-    return {"offer": offer, "cookies": cookies, "header": header}
+        return {
+            "cookies": cookies,
+            "header": header
+                }
 
 
 @app.post("/index-weights/")
