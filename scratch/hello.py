@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile, HTTPException
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile, HTTPException, Request
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
 from typing import Annotated, Any, Literal
 from datetime import datetime, time, timedelta
 from uuid import UUID
 import random
-
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -31,6 +31,24 @@ class User(BaseModel):
 @app.post("/images/multiple/")
 async def create_multiple_images(images: list[Image]):
     return images
+
+class UnicornException(Exception):
+    def __init__(self, name: str):
+        self.name = name
+
+@app.exception_handler(UnicornException)
+async def unicorn_exception_handler(request: Request, exc: UnicornException):
+    return JSONResponse(
+        status_code=status.HTTP_418_IM_A_TEAPOT,
+        content={"message": f"fck!  {exc.name} did something so wrong."}
+    )
+
+@app.get("/unicorns/{name}")
+async def read_unicorn(name:str):
+    if name == "sara":
+        raise UnicornException(name=name)
+    return {"unicorn_name": name}
+
 
 class Item(BaseModel):
     name: str = Field(examples=["Sia"])
