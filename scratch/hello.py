@@ -32,10 +32,12 @@ class User(BaseModel):
 async def create_multiple_images(images: list[Image]):
     return images
 
+# create MY OWN custom exception type.
 class UnicornException(Exception):
     def __init__(self, name: str):
         self.name = name
 
+# global handler for UnicornException.
 @app.exception_handler(UnicornException)
 async def unicorn_exception_handler(request: Request, exc: UnicornException):
     return JSONResponse(
