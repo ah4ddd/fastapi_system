@@ -84,7 +84,7 @@ games = {
     "gow3": "God of war 3",
     }
 
-@app.get("/games/{game_id}", tags=["games"])
+@app.get("/games/{game_id}", tags=["games"], response_description="your game")
 async def read_game(game_id: str):
     """
     ## 🎮 Get Game
@@ -177,7 +177,7 @@ def fake_save_user(user_in: UserIn):
     return user_in_db
 
 #dont fuck this in prod
-@app.post("/user/", response_model=UserOut, status_code=201)
+@app.post("/user/", response_model=UserOut, status_code=201, response_description="created fake user")
 async def create_user(user_in: UserIn) -> Any:
     user_saved = fake_save_user(user_in)
     return user_saved
