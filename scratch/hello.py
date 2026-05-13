@@ -84,8 +84,20 @@ games = {
     "gow3": "God of war 3",
     }
 
-@app.get("/games/{game_id}")
+@app.get("/games/{game_id}", tags=["games"])
 async def read_game(game_id: str):
+    """
+    ## 🎮 Get Game
+
+    Retrieve a game using its ID.
+
+    ### Example
+    - `mgsv`
+    - `gow3`
+
+    ### Raises
+    - `404` if game is not found
+    """
     if game_id not in games:
         raise HTTPException(
             status_code=404,
