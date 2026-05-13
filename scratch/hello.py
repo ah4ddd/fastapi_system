@@ -6,6 +6,7 @@ from datetime import datetime, time, timedelta
 from uuid import UUID
 import random
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
 
@@ -19,6 +20,17 @@ class ModelName(str, Enum):
     resnet = "resnet"
     lenet = "lenet"
 
+so_fake_db ={}
+
+class EncodeThisItem(BaseModel):
+    title: str
+    timestamp: datetime
+    description: str | None = None
+
+@app.put("/encode/{id}")
+async def encoder(id: str, item: EncodeThisItem):
+    json_compatible_item_data = jsonable_encoder(item)
+    so_fake_db[id] = json_compatible_item_data
 
 class Image(BaseModel):
     url: HttpUrl = Field(examples=["https://pin.it/1Gh7RZrSl"])
