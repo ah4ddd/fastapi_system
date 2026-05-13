@@ -130,7 +130,7 @@ async def create_cookie_header(header: Annotated[CommonHeaders, Header()],
                 }
 
 
-@app.post("/index-weights/")
+@app.post("/index-weights/", deprecated=True)
 async def create_index_weights(weights: dict[int, float]) -> dict:
     return weights
 
