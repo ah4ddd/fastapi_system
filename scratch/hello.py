@@ -122,7 +122,7 @@ async def create_cookie_header(header: Annotated[CommonHeaders, Header()],
 async def create_index_weights(weights: dict[int, float]) -> dict:
     return weights
 
-@app.post("/file/")
+@app.post("/file/", tags=["files"])
 async def create_file(file: Annotated[bytes, File(),],
                       fileb: Annotated[UploadFile, File()],
                       token: Annotated[str, Form()],
