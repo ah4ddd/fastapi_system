@@ -154,8 +154,10 @@ async def patch_update_game(game_id: str, game: GameUpdate):
     if game_id not in games_db:
         raise HTTPException(status_code=404, detail="Game not found")
     store_game_data = games_db[game_id]
-    store_game_model = GameUpdate(**store_game_data)
+    store_game_model = Game(**store_game_data)
+    # Only include fields user ACTUALLY sent. No None
     update_game = game.model_dump(exclude_unset=True)
+    # Take old object + overwrite changed fields = new object
     updated_game = store_game_model.model_copy(update=update_game)
     games_db[game_id] = jsonable_encoder(updated_game)
     return updated_game
