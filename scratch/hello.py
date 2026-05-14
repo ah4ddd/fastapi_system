@@ -207,7 +207,7 @@ async def create_file(file: Annotated[bytes, File(),],
             "file_content_type": fileb.content_type,
             "caption": caption}
 
-@app.post("/upload-file/", status_code=status.HTTP_201_CREATED)
+@app.post("/upload-file/", status_code=status.HTTP_201_CREATED, tags=["files"])
 async def create_upload_file(file: UploadFile):
     return {"filename": file.filename}
 
