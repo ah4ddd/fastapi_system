@@ -145,6 +145,16 @@ async def update_games(games: Game):
     games_db[games.title] = games_encoded
     return games_encoded
 
+@app.patch("/games/{game_id}", response_model=Game, tags=["games"])
+async def patch_update_game(game_id: str, game: Game):
+    if game_id not in games_db:
+        raise HTTPException(status_code=404, detail="Game not found")
+    store_game_data = games_db[game_id]
+    store_game_model = Game(**store_game_data)
+    update_game = game.model_dump(exclude_unset=True)
+    updated_game = store_game_model.model_copy(update=update_game)
+    games_db[game_id] = jsonable_encoder(updated_game)
+    return updated_game
 
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
