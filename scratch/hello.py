@@ -91,21 +91,33 @@ async def create_offer(offers: Offer):
     return {"offers": offers}
 
 
-class Games(BaseModel):
+class Game(BaseModel):
     title: str
     full_name: str
 
 games_db = {
-    "mgs3": "Snake Eater",
-    "gow3": "God of war 3",
-    "sh2": "Silent Hill 2"
+    "mgs3": {
+        "title": "mgs3",
+        "full_name": "Metal Gear Solid 3"
+    },
+    "gow3": {
+        "title": "gow3",
+        "full_name": "God of War 3"
+    },
+    "sh2": {
+        "title": "sh2",
+        "full_name": "Silent Hill 2"
     }
+}
 
 @app.get("/games/", tags=["games"])
 async def games():
     return games_db
 
-@app.get("/games/{game_id}", tags=["games"], response_description="your game")
+@app.get("/games/{game_id}",
+         response_model=Game,
+         tags=["games"],
+         response_description="your game")
 async def read_game(game_id: str):
     """
     ## 🎮 Get Game
@@ -125,13 +137,13 @@ async def read_game(game_id: str):
             detail="Game not found",
             headers={"Error": "There goes my error"},
                             )
-    return {"your_game": games_db[game_id]}
+    return games_db[game_id]
 
-@app.put("/games/", response_model=Games, tags=["games"])
-async def update_games(games: Games):
-    update_games_encoded = jsonable_encoder(games)
-    games_db[games.title] = update_games_encoded
-    return update_games_encoded
+@app.put("/games/", response_model=Game, tags=["games"])
+async def update_games(games: Game):
+    games_encoded = jsonable_encoder(games)
+    games_db[games.title] = games_encoded
+    return games_encoded
 
 
 class Cookies(BaseModel):
