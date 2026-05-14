@@ -91,10 +91,15 @@ async def create_offer(offers: Offer):
     return {"offers": offers}
 
 
-games = {
-    "mgsv": "Phantom Pain",
+class Games(BaseModel):
+    title: str
+    full_name: str
+
+games_db = {
+    "mgs3": "Snake Eater",
     "gow3": "God of war 3",
     }
+
 
 @app.get("/games/{game_id}", tags=["games"], response_description="your game")
 async def read_game(game_id: str):
@@ -110,13 +115,20 @@ async def read_game(game_id: str):
     ### Raises
     - `404` if game is not found
     """
-    if game_id not in games:
+    if game_id not in games_db:
         raise HTTPException(
             status_code=404,
             detail="Game not found",
             headers={"Error": "There goes my error"},
                             )
-    return {"your_game": games[game_id]}
+    return {"your_game": games_db[game_id]}
+
+@app.put("/games/", response_model=Games, tags=["games"])
+async def update_games(games: Games):
+    update_games_encoded = jsonable_encoder(games)
+    games_db[games.title] = update_games_encoded
+    return update_games_encoded
+
 
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
