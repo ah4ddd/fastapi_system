@@ -44,7 +44,7 @@ class User(BaseModel):
 async def create_multiple_images(images: list[Image]):
     return images
 
-# create MY OWN custom exception type.
+# create MY OWN custom exception type
 class UnicornException(Exception):
     def __init__(self, name: str):
         self.name = name
@@ -98,11 +98,11 @@ class Game(BaseModel):
 games_db = {
     "mgs3": {
         "title": "mgs3",
-        "full_name": "Metal Gear Solid 3"
+        "full_name": "Metal Gear Solid 3: Snake Eater"
     },
     "gow3": {
         "title": "gow3",
-        "full_name": "God of War 3"
+        "full_name": "God of War III"
     },
     "sh2": {
         "title": "sh2",
@@ -145,12 +145,16 @@ async def update_games(games: Game):
     games_db[games.title] = games_encoded
     return games_encoded
 
-@app.patch("/games/{game_id}", response_model=Game, tags=["games"])
-async def patch_update_game(game_id: str, game: Game):
+class GameUpdate(BaseModel):
+    title: str | None = None
+    full_name: str | None = None
+
+@app.patch("/games/{game_id}", response_model=GameUpdate, tags=["games"])
+async def patch_update_game(game_id: str, game: GameUpdate):
     if game_id not in games_db:
         raise HTTPException(status_code=404, detail="Game not found")
     store_game_data = games_db[game_id]
-    store_game_model = Game(**store_game_data)
+    store_game_model = GameUpdate(**store_game_data)
     update_game = game.model_dump(exclude_unset=True)
     updated_game = store_game_model.model_copy(update=update_game)
     games_db[game_id] = jsonable_encoder(updated_game)
