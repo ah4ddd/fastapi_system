@@ -149,7 +149,7 @@ class GameUpdate(BaseModel):
     title: str | None = None
     full_name: str | None = None
 
-@app.patch("/games/{game_id}", response_model=GameUpdate, tags=["games"])
+@app.patch("/games/{game_id}", response_model=Game, tags=["games"])
 async def patch_update_game(game_id: str, game: GameUpdate):
     if game_id not in games_db:
         raise HTTPException(status_code=404, detail="Game not found")
