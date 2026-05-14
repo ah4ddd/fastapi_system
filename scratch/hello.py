@@ -162,7 +162,7 @@ async def patch_update_game(game_id: str, game: GameUpdate):
     games_db[game_id] = jsonable_encoder(updated_game)
     return updated_game
 
-@app.delete("/games/", tags=["games"])
+@app.delete("/games/", status_code=204, tags=["games"])
 async def delete_game(game_id: str):
     if game_id not in games_db:
         raise HTTPException(status_code=404, detail="Game not found")
