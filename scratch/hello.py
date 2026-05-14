@@ -98,8 +98,12 @@ class Games(BaseModel):
 games_db = {
     "mgs3": "Snake Eater",
     "gow3": "God of war 3",
+    "sh2": "Silent Hill 2"
     }
 
+@app.get("/games/", tags=["games"])
+async def games():
+    return games_db
 
 @app.get("/games/{game_id}", tags=["games"], response_description="your game")
 async def read_game(game_id: str):
