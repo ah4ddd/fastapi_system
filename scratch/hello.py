@@ -174,8 +174,10 @@ async def common_parameters(q: str | None = None,
                             limit: int = 100):
     return {"q": q, "skip": skip, "limit": limit}
 
+CommonsDep = Annotated[dict, Depends(common_parameters)]
+
 @app.get("/read-users/")
-async def read_users(commons: Annotated[dict, Depends(common_parameters)]):
+async def read_users(commons: CommonsDep):
     return commons
 
 class Cookies(BaseModel):
