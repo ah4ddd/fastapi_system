@@ -180,11 +180,25 @@ CommonsDep = Annotated[dict, Depends(common_parameters)]
 async def read_users(commons: CommonsDep):
     return commons
 
+
+fake_items_db = [{"item_name": "Ursaal"},
+                 {"item_name": "Marcus"},
+                 {"item_name": "Rex"}]
+
 class CommonQueryParams:
     def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):
         self.q = q
         self.skip = skip
         self.limit = limit
+
+@app.get("/read-item/")
+async def read__items(commons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]):
+    response = {}
+    if commons.q:
+        response.update({"q": commons.q})
+    items = fake_items_db[commons.skip: commons.skip + commons.limit]
+    response.update({"items": items})
+    return response
 
 
 
@@ -342,7 +356,7 @@ async def read_time(
         "duration": duration,
     }
 
-fake_items_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
+fake_db = [{"item_name: Xoo"}, {"item_name": "Bar"}, {"item_name": "Taz"}]
 
 @app.get("/items/")
 async def read_item(q: Annotated[list[str] | None, Query(title="Query string",
@@ -352,8 +366,8 @@ async def read_item(q: Annotated[list[str] | None, Query(title="Query string",
                                                          deprecated=False,
                                                          min_length=3, max_length=50) ] = ["me", "her"]):
     if q:
-        return {"item": fake_items_db, "q": q}
-    return {"item": fake_items_db}
+        return {"item": fake_db, "q": q}
+    return {"item": fake_db}
 
 
 @app.post("/items/{item_id}")
