@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile, HTTPException, Request
+from fastapi import FastAPI, Query, Path, Body, Cookie, Header, status, Form, File, UploadFile, HTTPException, Request, Depends
 from enum import Enum
 from pydantic import BaseModel, AfterValidator, Field, HttpUrl, EmailStr
 from typing import Annotated, Any, Literal
@@ -167,6 +167,15 @@ async def delete_game(game_id: str):
     if game_id not in games_db:
         raise HTTPException(status_code=404, detail="Game not found")
     del games_db[game_id]
+
+async def common_parameters(q: str | None = None,
+                            skip: int = 0,
+                            limit: int = 100):
+    return {"q": q, "skip": skip, "limit": limit}
+
+@app.get("/read-users/")
+async def read_users(commons: Annotated[dict, Depends(common_parameters)]):
+    return commons
 
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
