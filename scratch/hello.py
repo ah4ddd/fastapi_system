@@ -44,13 +44,13 @@ class User(BaseModel):
 async def create_multiple_images(images: list[Image]):
     return images
 
-# create MY OWN custom exception type
+# MY OWN custom exception type
 class UnicornException(Exception):
     def __init__(self, name: str):
         self.name = name
 
-# global handler for UnicornException.
-# the same concept as route() but for exceptions,
+# global handler for UnicornException
+# The same concept as route() but for exceptions,
 # instead of routes. When THIS exception gets raised anywhere
 # in the app, run this function instead of crashing.
 @app.exception_handler(UnicornException)
@@ -250,7 +250,7 @@ def fake_save_user(user_in: UserIn):
     print("User saved! ..not really")
     return user_in_db
 
-#dont fuck this in prod
+
 @app.post("/user/", response_model=UserOut, status_code=201, response_description="created fake user")
 async def create_user(user_in: UserIn) -> Any:
     user_saved = fake_save_user(user_in)
