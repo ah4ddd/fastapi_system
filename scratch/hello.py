@@ -168,6 +168,7 @@ async def delete_game(game_id: str):
         raise HTTPException(status_code=404, detail="Game not found")
     del games_db[game_id]
 
+# dependency function
 async def common_parameters(q: str | None = None,
                             skip: int = 0,
                             limit: int = 100):
