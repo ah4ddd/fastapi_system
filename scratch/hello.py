@@ -180,6 +180,14 @@ CommonsDep = Annotated[dict, Depends(common_parameters)]
 async def read_users(commons: CommonsDep):
     return commons
 
+class CommonQueryParams:
+    def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):
+        self.q = q
+        self.skip = skip
+        self.limit = limit
+
+
+
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
     session_id: str
