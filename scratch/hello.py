@@ -175,6 +175,8 @@ async def query_extractor(q: str | None = None):
 async def common_parameters(q: Annotated[str, Depends(query_extractor)],
                             skip: int = 0,
                             limit: int = 100):
+    if not q:
+        return {"skip": skip, "limit": limit}
     return {"q": q, "skip": skip, "limit": limit}
 
 CommonsDep = Annotated[dict, Depends(common_parameters)]
