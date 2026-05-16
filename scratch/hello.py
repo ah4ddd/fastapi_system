@@ -187,6 +187,9 @@ class CommonQueryParams:
         self.skip = skip
         self.limit = limit
 
+q = CommonQueryParams("q", 1, 2)
+print(q.q, q.limit, q.skip)
+
 fake_items_db = [{"item_name": "Ursaal"},
                  {"item_name": "Marcus"},
                  {"item_name": "Rex"}]
@@ -199,7 +202,6 @@ async def read__items(commons: Annotated[CommonQueryParams, Depends()]):
     items = fake_items_db[commons.skip: commons.skip + commons.limit]
     response.update({"items": items})
     return response
-
 
 
 class Cookies(BaseModel):
