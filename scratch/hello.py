@@ -182,7 +182,7 @@ async def read_users(commons: CommonsDep):
 
 
 class CommonQueryParams:
-    def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):
+    def __init__(self, q: str | None = None, skip: int = 0, limit: int = 4):
         self.q = q
         self.skip = skip
         self.limit = limit
@@ -195,7 +195,7 @@ fake_items_db = [{"item_name": "Ursaal"},
                  {"item_name": "Rex"}]
 
 @app.get("/read-item/")
-async def read__items(commons: Annotated[CommonQueryParams, Depends()]):
+async def read__items(commons: Annotated[CommonQueryParams, Depends(CommonQueryParams)]):
     response = {}
     if commons.q:
         response.update({"q": commons.q})
