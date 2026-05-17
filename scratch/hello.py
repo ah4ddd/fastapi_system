@@ -220,6 +220,21 @@ async def verify_key(x_key: Annotated[str, Header()]):
 
 @app.get("/tokens/", dependencies=[Depends(verify_token), Depends(verify_key)])
 async def read_tokens():
+    """
+    Before endpoint executes:
+    read_items()
+
+    FastAPI first executes:
+    verify_token()
+    verify_key()
+
+    IF BOTH PASS:
+    endpoint runs.
+
+    IF ONE FAILS:
+    endpoint NEVER runs.
+    """
+
     return [{"item": "Monax"}, {"item": "Terra"}]
 
 
