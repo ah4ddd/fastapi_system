@@ -243,10 +243,6 @@ test_data = {
     "portal-gun": {"description": "Gun to create portals", "owner": "Rick"},
     }
 
-class OwnerError(Exception):
-    pass
-
-
 def get_username():
     try:
         yield "Morty"
