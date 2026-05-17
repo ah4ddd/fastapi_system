@@ -215,7 +215,8 @@ async def verify_token(x_token: Annotated[str, Header()]):
 
 async def verify_key(x_key: Annotated[str, Header()]):
     if x_key != "fake-super-secret-key":
-        return x_key
+        raise HTTPException(status_code=400, detail="X-token header invalid")
+    return x_key
 
 @app.get("/tokens/", dependencies=[Depends(verify_token), Depends(verify_key)])
 async def read_tokens():
