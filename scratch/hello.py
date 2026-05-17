@@ -255,7 +255,7 @@ def get_username():
 
 
 @app.get("/owned/me")
-def get_user_me(username: Annotated[str, Depends(get_username, scope="function")]):
+def get_user_me(username: Annotated[str, Depends(get_username)]):
     return username
 
 @app.get("/owned/{owned_id}")
