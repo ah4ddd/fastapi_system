@@ -238,6 +238,33 @@ async def read_tokens():
     return [{"item": "Monax"}, {"item": "Terra"}]
 
 
+test_data = {
+    "plumbus": {"description": "Freshly pickled plumbus", "owner": "Morty"},
+    "portal-gun": {"description": "Gun to create portals", "owner": "Rick"},
+}
+
+
+class OwnerError(Exception):
+    pass
+
+
+def get_username():
+    try:
+        yield "Rick"
+    except OwnerError as e:
+        raise HTTPException(status_code=400, detail=f"Owner error: {e}")
+
+
+@app.get("/owner/{owner_id}")
+def get_item(owner_id: str, username: Annotated[str, Depends(get_username)]):
+    if owner_id not in test_data:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item = test_data[owner_id]
+    if item["owner"] != username:
+        raise OwnerError(username)
+    return item
+
+
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
     session_id: str
