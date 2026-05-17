@@ -8,7 +8,16 @@ import random
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
-app = FastAPI()
+async def verify_token(x_token: Annotated[str, Header()]):
+    if x_token != "fake-super-secret_token":
+        raise HTTPException(status_code=400, detail="X-key header invalid")
+
+async def verify_key(x_key: Annotated[str, Header()]):
+    if x_key != "fake-super-secret-key":
+        raise HTTPException(status_code=400, detail="X-token header invalid")
+    return x_key
+
+app = FastAPI(dependencies=[Depends(verify_token), Depends(verify_key)])
 
 @app.get("/") # path operation decorator
 async def root(): # path operation function
@@ -209,14 +218,6 @@ async def read__items(commons: Annotated[CommonQueryParams, Depends()]):
     response.update({"items": items})
     return response
 
-async def verify_token(x_token: Annotated[str, Header()]):
-    if x_token != "fake-super-secret_token":
-        raise HTTPException(status_code=400, detail="X-key header invalid")
-
-async def verify_key(x_key: Annotated[str, Header()]):
-    if x_key != "fake-super-secret-key":
-        raise HTTPException(status_code=400, detail="X-token header invalid")
-    return x_key
 
 @app.get("/tokens/", dependencies=[Depends(verify_token), Depends(verify_key)])
 async def read_tokens():
