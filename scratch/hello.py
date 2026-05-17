@@ -217,7 +217,9 @@ async def verify_key(x_key: Annotated[str, Header()]):
     if x_key != "fake-super-secret-key":
         return x_key
 
-
+@app.get("/tokens/", dependencies=[Depends(verify_token), Depends(verify_key)])
+async def read_tokens():
+    return [{"item": "Monax"}, {"item": "Terra"}]
 
 
 class Cookies(BaseModel):
