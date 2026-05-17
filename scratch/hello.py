@@ -266,6 +266,14 @@ def get_item(
                             detail="Item not found, there's only a plumbus here")
     return owned_id
 
+""" # to be used in future
+async def get_db():
+    db = DBSession()    # step 1 — open connection
+    try:
+        yield db        # step 2 — PAUSE here, give db to endpoint
+    finally:
+        db.close()      # step 3 — runs AFTER endpoint finishes
+"""
 
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
