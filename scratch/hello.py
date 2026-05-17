@@ -255,13 +255,19 @@ def get_username():
         raise HTTPException(status_code=400, detail=f"Owner error: {e}")
 
 
-@app.get("/owner/{owner_id}")
-def get_item(owner_id: str, username: Annotated[str, Depends(get_username)]):
+@app.get("/owned/{owned_id}")
+def get_item(
+    owner_id: str,
+    username: Annotated[str, Depends(get_username)]
+):
     if owner_id not in test_data:
         raise HTTPException(status_code=404, detail="Item not found")
+
     item = test_data[owner_id]
+
     if item["owner"] != username:
         raise OwnerError(username)
+
     return item
 
 
