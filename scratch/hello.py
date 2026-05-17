@@ -246,16 +246,17 @@ test_data = {
 class OwnerError(Exception):
     pass
 
-class InternalError(Exception):
-    pass
 
 def get_username():
     try:
         yield "Morty"
-    except InternalError:
-        print("We don't swallow the internal error here, we raise again")
-        raise
+    finally:
+        print("Cleaned up before response is sent")
 
+
+@app.get("/owned/me")
+def get_user_me(username: Annotated[str, Depends(get_username, scope="function")]):
+    return username
 
 @app.get("/owned/{owned_id}")
 def get_item(
