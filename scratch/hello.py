@@ -209,6 +209,13 @@ async def read__items(commons: Annotated[CommonQueryParams, Depends()]):
     response.update({"items": items})
     return response
 
+async def verify_token(x_token: Annotated[str, Header()]):
+    if x_token != "fake-super-secret_token":
+        raise HTTPException(status_code=400, detail="X-key header invalid")
+
+
+
+
 
 class Cookies(BaseModel):
     model_config = {"extra": "forbid"}
