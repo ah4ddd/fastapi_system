@@ -200,7 +200,6 @@ fake_items_db = [{"item_name": "Ursaal"},
                  {"item_name": "Rex"}]
 
 @app.get("/read-item/")
-# shortcut — FastAPI infers the dependency from the type annotation aswell
 async def read__items(commons: Annotated[CommonQueryParams, Depends()]):
     response = {}
     if commons.q:
