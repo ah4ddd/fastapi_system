@@ -14,12 +14,15 @@ async def items(item_id: str):
 class User(BaseModel):
     name: str
     age: int
+    country: str | None = None
 
 user_db = {}
 
 @app.post("/user/")
 async def user(user: User):
     user_db[user.name.title()] = user.model_dump()
+    if user.country:
+        return f"Welcom {user.name.title()} from {user.country.title()}"
     return f"welcome {user.name.title()}"
 
 @app.get("/see-users/")
