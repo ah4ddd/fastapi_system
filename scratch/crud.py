@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from pydantic import BaseModel
+from typing import Annotated
 
 app = FastAPI()
 
@@ -28,3 +29,12 @@ async def user(user: User):
 @app.get("/see-users/")
 async def users():
     return user_db
+
+@app.delete("/user/")
+async def del_user(user: Annotated[str, Body()]):
+    username = user.title()
+    if username in user_db:
+        del user_db[username]
+        return {"detail": "User deleted"}
+    return {"detail": "User not found"}
+
