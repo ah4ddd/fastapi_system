@@ -22,6 +22,6 @@ async def user(user: User):
     user_db[user.name.title()] = user.model_dump()
     return f"welcome {user.name.title()}"
 
-@app.get("see-users")
+@app.get("/see-users/")
 async def users():
     return user_db
