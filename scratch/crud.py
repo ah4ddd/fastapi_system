@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -8,4 +9,12 @@ async def hello():
 
 @app.post("/items/{item_id}/")
 async def items(item_id: str):
-    return f"back at yaa!! : {item_id}"
+    return f"back at yaa!! {item_id}"
+
+class User(BaseModel):
+    name: str
+    age: int
+
+@app.post("/user/")
+async def user(user: User):
+    return f"welcome {user.name}"
