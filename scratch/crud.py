@@ -15,6 +15,10 @@ class User(BaseModel):
     name: str
     age: int
 
+user_db = {}
+
 @app.post("/user/")
 async def user(user: User):
+    user_db[user.name] = user.model_dump()
     return f"welcome {user.name}"
+
