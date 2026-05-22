@@ -38,3 +38,6 @@ async def del_user(user: Annotated[str, Body()]):
         return {"detail": "User deleted"}
     return {"detail": "User not found"}
 
+@app.post("/addition/")
+async def add(a: Annotated[int, Body()], b: Annotated[int, Body()]):
+    return a + b
