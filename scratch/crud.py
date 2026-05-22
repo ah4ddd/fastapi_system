@@ -41,3 +41,8 @@ async def del_user(user: Annotated[str, Body()]):
 @app.post("/addition/")
 async def add(a: Annotated[int, Body()], b: Annotated[int, Body()]):
     return a + b
+
+@app.post("/subtraction/")
+async def sub(a: Annotated[int, Body()], b: Annotated[int, Body()]):
+    return a - b
+
