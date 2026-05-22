@@ -1,12 +1,20 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, Depends
 from pydantic import BaseModel
 from typing import Annotated
+from fastapi.security import OAuth2PasswordBearer
 
 app = FastAPI()
 
 @app.get("/hello/")
 async def hello():
     return {"LETS DO IT FROM SCRATCH"}
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+@app.get("/items/")
+async def read_items(token: Annotated[str, Depends(oauth2_scheme)]):
+    return {"token": token}
+
 
 @app.post("/items/{item_id}/")
 async def items(item_id: str):
