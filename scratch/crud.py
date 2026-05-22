@@ -15,6 +15,7 @@ class AuthUser(BaseModel):
     full_name: str | None = None
     disabled: bool | None = None
 
+# OAuth2 bearer-token extractor
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def fake_decode_token(token):
@@ -29,7 +30,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 @app.get("/users/me")
-async def read_user_me(current_user: Annotated[str, Depends(get_current_user)]):
+async def read_user_me(current_user: Annotated[AuthUser, Depends(get_current_user)]):
     return current_user
 
 
@@ -74,3 +75,7 @@ async def sub(a: Annotated[int, Body()], b: Annotated[int, Body()]):
 @app.post("/multiplication/")
 async def multiply(a: Annotated[int, Body()], b: Annotated[int, Body()]):
     return a * b
+
+@app.post("/division/")
+async def divide(a: Annotated[int, Body()], b: Annotated[int, Body()]):
+    return a / b
