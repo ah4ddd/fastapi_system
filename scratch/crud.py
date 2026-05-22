@@ -9,6 +9,12 @@ app = FastAPI()
 async def hello():
     return {"LETS DO IT FROM SCRATCH"}
 
+class AuthUser(BaseModel):
+    username: str
+    email: str | None = None
+    full_name: str | None = None
+    disabled: bool | None = None
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.get("/items/")
