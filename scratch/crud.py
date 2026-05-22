@@ -54,3 +54,6 @@ async def add(a: Annotated[int, Body()], b: Annotated[int, Body()]):
 async def sub(a: Annotated[int, Body()], b: Annotated[int, Body()]):
     return a - b
 
+@app.post("/multiplication/")
+async def multiply(a: Annotated[int, Body()], b: Annotated[int, Body()]):
+    return a * b
