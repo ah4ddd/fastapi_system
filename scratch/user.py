@@ -22,12 +22,6 @@ fake_user_db = {
 
 app = FastAPI()
 
-def fake_hashed_password(password: str):
-    return "fakehashed" + password
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 class User(BaseModel):
     username: str
@@ -38,6 +32,13 @@ class User(BaseModel):
 
 class UserInDB(User):
     hashed_password: str
+
+# extracts token
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
+def fake_hashed_password(password: str):
+    return "fakehashed" + password
 
 
 def get_user(db, username: str):
@@ -50,7 +51,7 @@ def fake_decode_token(token):
     user = get_user(fake_user_db, token)
     return user
 
-
+# turns token into user
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = fake_decode_token(token)
     if not user:
@@ -61,6 +62,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         )
     return user
 
+# check if user active
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)]
 ):
