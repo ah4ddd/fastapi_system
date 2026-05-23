@@ -62,3 +62,17 @@ async def get_current_active_user(
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+@app.post("/token")
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    user_dict = fake_user_db.get(form_data.username)
+    if not user_dict:
+        raise HTTPException(status_code=400,
+                            detail="Incorrect username or password")
+    user = UserInDB(**user_dict)
+    hashed_password = fake_hashed_password(form_data.password)
+    if not hashed_password == user.hashed_password:
+        raise HTTPException(status_code=400,
+                            detail="Incorrect username or password")
+    return {"access_token": user.username, "token_type": "bearer"}
+
