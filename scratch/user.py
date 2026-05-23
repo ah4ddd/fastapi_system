@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 
 fake_user_db = {
-    "Ahad": {
+    "ahad": {
         "username": "ahad",
         "full_name": "Abdul Ahad",
         "email": "ahad@example.com",
@@ -22,8 +22,8 @@ fake_user_db = {
 
 app = FastAPI()
 
-def fake_hashed_password(passowrd: str):
-    return "fakehashed" + passowrd
+def fake_hashed_password(password: str):
+    return "fakehashed" + password
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -84,8 +84,8 @@ async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     return {"access_token": user.username, "token_type": "bearer"}
 
 
-@app.get("user/me")
-async def read_user_me(
+@app.get("/users/me", response_model=User)
+async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)]
     ):
     return current_user
