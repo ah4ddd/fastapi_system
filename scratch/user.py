@@ -16,7 +16,7 @@ fake_user_db = {
         "full_name": "Siya Sharma",
         "email": "siya@example.com",
         "hashed_password": "fakehashedsecret2",
-        "disabled": False
+        "disabled": True
     }
 }
 
