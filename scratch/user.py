@@ -34,6 +34,7 @@ class UserInDB(User):
     hashed_password: str
 
 # extracts token
+# can name tokenUrl anything but it should match login route
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
@@ -91,3 +92,32 @@ async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)]
     ):
     return current_user
+
+
+"""
+REQUEST ARRIVES
+↓
+/users/me
+↓
+get_current_active_user()
+↓
+get_current_user()
+↓
+oauth2_scheme()
+↓
+extract token from Authorization header
+↓
+returns "ahad"
+↓
+get_current_user(token="ahad")
+↓
+fake_decode_token("ahad")
+↓
+get_user(fake_user_db, "ahad")
+↓
+returns actual user object
+↓
+check disabled
+↓
+route finally executes
+"""
