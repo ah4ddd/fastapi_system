@@ -10,8 +10,8 @@ from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
 
-@app.get("/") # path operation decorator
-async def root(): # path operation function
+@app.get("/")
+async def root():
     return {"message": "Hello World"}
 
 
@@ -44,7 +44,7 @@ class User(BaseModel):
 async def create_multiple_images(images: list[Image]):
     return images
 
-# MY OWN custom exception type
+# my own custom exception type
 class UnicornException(Exception):
     def __init__(self, name: str):
         self.name = name
