@@ -53,6 +53,7 @@ class UnicornException(Exception):
 # The same concept as route() but for exceptions,
 # instead of routes. When THIS exception gets raised anywhere
 # in the app, run this function instead of crashing.
+# (might not use this one much)
 @app.exception_handler(UnicornException)
 async def unicorn_exception_handler(request: Request, exc: UnicornException):
     return JSONResponse(
