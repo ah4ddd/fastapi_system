@@ -79,3 +79,7 @@ async def multiply(a: Annotated[int, Body()], b: Annotated[int, Body()]):
 @app.post("/division/")
 async def divide(a: Annotated[int, Body()], b: Annotated[int, Body()]):
     return a / b
+
+@app.post("/floordivision/")
+async def fd(a: Annotated[int, Body()], b: Annotated[int, Body()]):
+    return a//b
