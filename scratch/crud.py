@@ -82,4 +82,8 @@ async def divide(a: Annotated[int, Body()], b: Annotated[int, Body()]):
 
 @app.post("/floordivision/")
 async def fd(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a//b
+    return a // b
+
+@app.post("/modulo/")
+async def modular(a: Annotated[int, Body()], b: Annotated[int, Body()]):
+    return a % b
