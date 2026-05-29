@@ -2,13 +2,20 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
+from datetime import datetime, timedelta, timezone
+import jwt
+from pwdlib import PasswordHash
+
+SECRECT_KEY = "e606675cf40e959035c05fd5c682f78b39571578423bc55931c16eb764d8a859"
+ALGORITHMV = "HS256"
+ACESS_TOKEN_EXPIRE_MINUTES = 30
 
 fake_user_db = {
     "ahad": {
         "username": "ahad",
         "full_name": "Abdul Ahad",
         "email": "ahad@example.com",
-        "hashed_password": "fakehashedsecret",
+        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$wagCPXjifgvUFBzq4hqe3w$CYaIb8sB+wtD+Vu/P4uod1+Qof8h+1g7bbDlBID48Rc",
         "disabled": False,
     },
     "siya":{
@@ -22,13 +29,19 @@ fake_user_db = {
 
 app = FastAPI()
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+
 
 class User(BaseModel):
     username: str
     email: str | None = None
     full_name: str | None = None
     disabled: bool | None = None
-
 
 class UserInDB(User):
     hashed_password: str
@@ -47,7 +60,7 @@ def get_user(db, username: str):
         user_dict = db[username]
         return UserInDB(**user_dict)
 
-
+# username = token btw
 def fake_decode_token(token):
     user = get_user(fake_user_db, token)
     return user
