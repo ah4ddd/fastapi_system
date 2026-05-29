@@ -27,7 +27,6 @@ fake_user_db = {
     }
 }
 
-app = FastAPI()
 
 class Token(BaseModel):
     access_token: str
@@ -46,13 +45,25 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
+
+password_hash = PasswordHash.recommended()
+
+DUMMY_HASH = password_hash.hash("dummypassword")
+
 # extracts token
 # can name tokenUrl anything but it should match login route
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def fake_hashed_password(password: str):
-    return "fakehashed" + password
+app = FastAPI()
+
+
+def verify_password(plain_password, hashed_password):
+    return password_hash.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return password_hash.hash(password)
 
 
 def get_user(db, username: str):
