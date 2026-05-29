@@ -72,6 +72,9 @@ async def get_current_active_user(
     return current_user
 
 
+# class that receives the login form submission.
+# It's a dependency — FastAPI reads the incoming form data
+# and populates it automatically
 @app.post("/token")
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user_dict = fake_user_db.get(form_data.username)
