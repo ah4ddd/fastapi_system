@@ -1,29 +1,26 @@
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
+
+import jwt
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
-from datetime import datetime, timedelta, timezone
-import jwt
+from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
+from pydantic import BaseModel
 
-SECRECT_KEY = "e606675cf40e959035c05fd5c682f78b39571578423bc55931c16eb764d8a859"
-ALGORITHMV = "HS256"
-ACESS_TOKEN_EXPIRE_MINUTES = 30
 
-fake_user_db = {
-    "ahad": {
-        "username": "ahad",
-        "full_name": "Abdul Ahad",
-        "email": "ahad@example.com",
+SECRET_KEY = "e606675cf40e959035c05fd5c682f78b39571578423bc55931c16eb764d8a859"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+
+fake_users_db = {
+    "johndoe": {
+        "username": "johndoe",
+        "full_name": "John Doe",
+        "email": "johndoe@example.com",
         "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$wagCPXjifgvUFBzq4hqe3w$CYaIb8sB+wtD+Vu/P4uod1+Qof8h+1g7bbDlBID48Rc",
         "disabled": False,
-    },
-    "siya":{
-        "username": "siya",
-        "full_name": "Siya Sharma",
-        "email": "siya@example.com",
-        "hashed_password": "fakehashedsecret2",
-        "disabled": True
     }
 }
 
@@ -31,6 +28,7 @@ fake_user_db = {
 class Token(BaseModel):
     access_token: str
     token_type: str
+
 
 class TokenData(BaseModel):
     username: str | None = None
@@ -42,6 +40,7 @@ class User(BaseModel):
     full_name: str | None = None
     disabled: bool | None = None
 
+
 class UserInDB(User):
     hashed_password: str
 
@@ -50,10 +49,7 @@ password_hash = PasswordHash.recommended()
 
 DUMMY_HASH = password_hash.hash("dummypassword")
 
-# extracts token
-# can name tokenUrl anything but it should match login route
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 app = FastAPI()
 
@@ -71,80 +67,83 @@ def get_user(db, username: str):
         user_dict = db[username]
         return UserInDB(**user_dict)
 
-# username = token btw
-def fake_decode_token(token):
-    user = get_user(fake_user_db, token)
-    return user
 
-# turns token into user
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    user = fake_decode_token(token)
+def authenticate_user(fake_db, username: str, password: str):
+    user = get_user(fake_db, username)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
+        verify_password(password, DUMMY_HASH)
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
     return user
 
-# check if user active
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = get_user(fake_users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)]
+    current_user: Annotated[User, Depends(get_current_user)],
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
-# class that receives the login form submission.
-# It's a dependency — FastAPI reads the incoming form data
-# and populates it automatically
 @app.post("/token")
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user_dict = fake_user_db.get(form_data.username)
-    if not user_dict:
-        raise HTTPException(status_code=400,
-                            detail="Incorrect username or password")
-    user = UserInDB(**user_dict)
-    hashed_password = fake_hashed_password(form_data.password)
-    if not hashed_password == user.hashed_password:
-        raise HTTPException(status_code=400,
-                            detail="Incorrect username or password")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+) -> Token:
+    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
 
-    return {"access_token": user.username, "token_type": "bearer"}
 
-
-@app.get("/users/me", response_model=User)
+@app.get("/users/me/")
 async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)]
-    ):
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> User:
     return current_user
 
 
-"""
-REQUEST ARRIVES
-↓
-/users/me
-↓
-get_current_active_user()
-↓
-get_current_user()
-↓
-oauth2_scheme()
-↓
-extract token from Authorization header
-↓
-returns "ahad"
-↓
-get_current_user(token="ahad")
-↓
-fake_decode_token("ahad")
-↓
-get_user(fake_user_db, "ahad")
-↓
-returns actual user object
-↓
-check disabled
-↓
-route finally executes
-"""
+@app.get("/users/me/items/")
+async def read_own_items(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+):
+    return [{"item_id": "Foo", "owner": current_user.username}]
