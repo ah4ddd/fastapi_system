@@ -7,9 +7,11 @@ from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
 from pydantic import BaseModel
 
-
+# Backend's private signature stamp, JWT uses this to sign tokens
 SECRET_KEY = "e606675cf40e959035c05fd5c682f78b39571578423bc55931c16eb764d8a859"
+# mathematical signing algorithm
 ALGORITHM = "HS256"
+# JWT dies after 30 mins
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
@@ -43,11 +45,13 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
-
+# create a password security engine
+# knows: how to hash passwords & verify passwords
 password_hash = PasswordHash.recommended()
 
 DUMMY_HASH = password_hash.hash("dummypassword")
 
+# TOKEN EXTRACTOR DEPENDENCY
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
@@ -82,9 +86,10 @@ def authenticate_user(fake_db, username: str, password: str):
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
+        # Current UTC time + 30 minutes = token expiration time
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=10)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
