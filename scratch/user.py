@@ -20,6 +20,7 @@ fake_users_db = {
         "username": "ahad",
         "full_name": "Abdul Ahad",
         "email": "ahad@example.com",
+        # algorithm + settings + salt + final hash
         "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$wagCPXjifgvUFBzq4hqe3w$CYaIb8sB+wtD+Vu/P4uod1+Qof8h+1g7bbDlBID48Rc",
         "disabled": False,
     }
