@@ -46,7 +46,7 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
-# create a password security engine
+# create a password hashing security engine
 # knows: how to hash passwords & verify passwords
 password_hash = PasswordHash.recommended()
 
@@ -63,6 +63,8 @@ def verify_password(plain_password, hashed_password):
 
 
 def get_password_hash(password):
+    # generate random salt + mix with password +
+    # + argon2 hash + store everything in one string
     return password_hash.hash(password)
 
 
@@ -76,6 +78,7 @@ def get_user(db, username: str | None):
 
 def authenticate_user(fake_db, username: str, password: str):
     user = get_user(fake_db, username)
+    # Even when user DOESN'T EXIST: backend STILL performs fake hash verification.
     if not user:
         verify_password(password, DUMMY_HASH)
         return False
