@@ -28,6 +28,7 @@ class CreateItemResponse(BaseModel):
     message: str
 
 
+# --For Weather--
 class WeatherResponse(BaseModel):
     city: str
     temperature: float
@@ -36,6 +37,7 @@ class WeatherResponse(BaseModel):
     timestamp: datetime
 
 
+# --For GitHub API--
 class GitHubRepo(BaseModel):
     """Single repository data"""
     name: str
@@ -53,6 +55,7 @@ class GitHubReposResponse(BaseModel):
     fetched_at: str
 
 
+# --For Crypto--
 class CryptoPrice(BaseModel):
     """Single crypto price data"""
     symbol: str
@@ -72,6 +75,7 @@ class CryptoHistory(BaseModel):
     timestamp: str
 
 
+# --For User--
 class UserSignup(BaseModel):
     """User signup request"""
     email: str
