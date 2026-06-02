@@ -157,6 +157,24 @@ async def login_for_access_token(
     return Token(access_token=access_token, token_type="bearer")
 
 
+@app.post("/register/")
+async def register(user: RegisterUser):
+    if user.username in fake_users_db:
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exisits"
+            )
+    hashed_password = get_password_hash(user.password)
+
+    fake_users_db[user.password] = {
+        "username": user.username,
+        "full_name": user.full_name,
+        "email": user.email,
+        "hashed_passoword": hashed_password,
+        "disabled": False
+    }
+
+
 @app.get("/users/me/")
 async def read_users_me(
     current_user: Annotated[User, Depends(get_current_active_user)],
