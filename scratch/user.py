@@ -16,12 +16,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 fake_users_db = {
-    "ahad": {
-        "username": "ahad",
-        "full_name": "Abdul Ahad",
-        "email": "ahad@example.com",
-        # algorithm + settings + salt + final hash
-        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$F1RwQHGBLe5mlkfaowGzOw$W237Zz3JY7botMHWY0AG58YcElsrQ/qpk9OoK1ZzGTc",
+    "admin": {
+        "username": "admin",
+        "full_name": "Main Admin",
+        "email": "admin@example.com",
+        "hashed_password": "",
         "disabled": False,
     }
 }
@@ -46,15 +45,26 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
+
 class RegisterUser(BaseModel):
     username: str
     password: str
     email: str | None = None
     full_name: str | None = None
 
+
 # create a password hashing security engine
 # knows: how to hash passwords & verify passwords
 password_hash = PasswordHash.recommended()
+
+def get_password_hash(password):
+    # generate random salt + mix with password +
+    # + argon2 hash + store everything in one string
+    return password_hash.hash(password)
+
+admin_password = "admin123"
+
+fake_users_db["admin"]["hashed_passoword"] = get_password_hash(admin_password)
 
 DUMMY_HASH = password_hash.hash("dummypassword")
 
@@ -66,12 +76,6 @@ app = FastAPI()
 
 def verify_password(plain_password, hashed_password):
     return password_hash.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    # generate random salt + mix with password +
-    # + argon2 hash + store everything in one string
-    return password_hash.hash(password)
 
 
 def get_user(db, username: str | None):
