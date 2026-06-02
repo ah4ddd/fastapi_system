@@ -105,7 +105,8 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=10)
     to_encode.update({"exp": expire})
-    # serializes payload & signs it cryptographically. ALSO verifies signature
+    # serializes header + payload & signs it cryptographically
+    # produces: SUPER LONG RANDOM SIGNATURE & final token (h.p.s)
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -164,6 +165,7 @@ async def register(user: RegisterUser):
             status_code=400,
             detail="Username already exisits"
             )
+    # run hashing process
     hashed_password = get_password_hash(user.password)
 
     fake_users_db[user.username] = {
@@ -199,6 +201,38 @@ async def generate_hash(password: str):
     }
 
 
+# just for test (dont do this in production)
 @app.get("/all-users")
 async def all_users():
     return fake_users_db
+
+
+"""
+ENTIRE FLOW:
+
+REGISTER
+↓
+hash password
+↓
+store user in DB
+
+LOGIN
+↓
+verify password
+↓
+create JWT token
+↓
+give token to browser
+
+PROTECTED ROUTE
+↓
+browser sends token
+↓
+backend verifies token
+↓
+backend extracts username
+↓
+backend fetches user
+↓
+route unlocked
+"""
