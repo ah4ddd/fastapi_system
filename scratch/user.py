@@ -64,7 +64,7 @@ def get_password_hash(password):
 
 admin_password = "admin123"
 
-fake_users_db["admin"]["hashed_passoword"] = get_password_hash(admin_password)
+fake_users_db["admin"]["hashed_password"] = get_password_hash(admin_password)
 
 DUMMY_HASH = password_hash.hash("dummypassword")
 
@@ -166,11 +166,11 @@ async def register(user: RegisterUser):
             )
     hashed_password = get_password_hash(user.password)
 
-    fake_users_db[user.password] = {
+    fake_users_db[user.username] = {
         "username": user.username,
         "full_name": user.full_name,
         "email": user.email,
-        "hashed_passoword": hashed_password,
+        "hashed_password": hashed_password,
         "disabled": False
     }
 
@@ -188,6 +188,7 @@ async def read_own_items(
 ):
     return [{"item_id": "siya", "owner": current_user.username}]
 
+
 @app.get("/generate-hash/{password}")
 async def generate_hash(password: str):
     hashed = get_password_hash(password)
@@ -196,3 +197,8 @@ async def generate_hash(password: str):
         "plain_password": password,
         "hashed_password": hashed
     }
+
+
+@app.get("/all-users")
+async def all_users():
+    return fake_users_db
