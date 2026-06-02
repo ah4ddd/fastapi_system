@@ -21,7 +21,7 @@ fake_users_db = {
         "full_name": "Abdul Ahad",
         "email": "ahad@example.com",
         # algorithm + settings + salt + final hash
-        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$wagCPXjifgvUFBzq4hqe3w$CYaIb8sB+wtD+Vu/P4uod1+Qof8h+1g7bbDlBID48Rc",
+        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$F1RwQHGBLe5mlkfaowGzOw$W237Zz3JY7botMHWY0AG58YcElsrQ/qpk9OoK1ZzGTc",
         "disabled": False,
     }
 }
@@ -159,3 +159,12 @@ async def read_own_items(
     current_user: Annotated[User, Depends(get_current_active_user)],
 ):
     return [{"item_id": "siya", "owner": current_user.username}]
+
+@app.get("/generate-hash/{password}")
+async def generate_hash(password: str):
+    hashed = get_password_hash(password)
+
+    return {
+        "plain_password": password,
+        "hashed_password": hashed
+    }
