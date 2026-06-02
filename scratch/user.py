@@ -46,6 +46,12 @@ class User(BaseModel):
 class UserInDB(User):
     hashed_password: str
 
+class RegisterUser(BaseModel):
+    username: str
+    password: str
+    email: str | None = None
+    full_name: str | None = None
+
 # create a password hashing security engine
 # knows: how to hash passwords & verify passwords
 password_hash = PasswordHash.recommended()
