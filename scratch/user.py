@@ -57,6 +57,7 @@ class RegisterUser(BaseModel):
     email: str | None = None
     full_name: str | None = None
 
+# Passoword Hashing Engine
 # A PasswordHash object configured with Argon2id using
 # secure recommended settings (65536 KB memory, 3 iterations, 4 parallel threads)
 # knows: how to hash passwords & verify passwords
@@ -64,7 +65,7 @@ password_hash = PasswordHash.recommended()
 
 def get_password_hash(password):
     """
-    Takes plaintext string → generate random salt + mix with password + argon2 hash + store everything in one string.
+    Takes plaintext string → generate random salt + mix with password 8+ argon2 hash + store everything in one string.
     """
     return password_hash.hash(password)
 
@@ -98,11 +99,15 @@ def verify_password(plain_password, hashed_password):
 
 
 def get_user(db, username: str | None):
+    """
+    The result in memory is a UserInDB object with all fields populated.
+    You can now do user.hashed_password, user.username, etc. with editor autocomplete.
+    """
     if username is None:
         return None
     if username in db:
         user_dict = db[username]
-        return UserInDB(**user_dict)
+        return UserInDB(**user_dict) # spreads the dict as keyword arguments
 
 
 def authenticate_user(fake_db, username: str, password: str):
@@ -111,12 +116,24 @@ def authenticate_user(fake_db, username: str, password: str):
     if not user:
         verify_password(password, DUMMY_HASH)
         return False
+    # User exists. Now check their password.
+    # verify_password hashes what they sent using the stored salt
+    # and compares. Wrong password → return False.
     if not verify_password(password, user.hashed_password):
         return False
+    # Both checks passed. Returns the UserInDB object.
     return user
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    """
+    THE TOKEN DOES NOT EXPIRE BY ITSELF
+    The SERVER checks:
+    “Is the current time greater than the token's stored expiry time?”
+    That's it.
+    """
+    # This is the payload — what you want to store in the token
+    # Makes a copy of the dict. You never mutate function arguments
     to_encode = data.copy()
     if expires_delta:
         # Current UTC time + 30 minutes = token expiration time
@@ -131,6 +148,15 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    """
+    jwt.decode does THREE things simultaneously:
+
+    * Decodes the base64 — extracts the payload dict
+    * Verifies the signature — recalculates HMAC-SHA256 of header+payload using * * your SECRET_KEY and checks it matches Part3. If someone tampered with the * * payload, the signature won't match → InvalidTokenError
+    * Checks exp — compares the expiry datetime to right now. If expired → InvalidTokenError
+
+    If all three pass, payload is now a plain Python dict
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -195,9 +221,25 @@ async def register(user: RegisterUser):
         "disabled": False
     }
 
-
+"""
+Protected Route
+      ↓
+get_current_active_user()
+      ↓
+get_current_user()
+      ↓
+jwt.decode()
+      ↓
+TOKEN VALID?
+   ↓       ↓
+ YES       NO
+ ↓          ↓
+return      raise 401
+user
+"""
 @app.get("/users/me/")
 async def read_users_me(
+
     current_user: Annotated[User, Depends(get_current_active_user)],
 ) -> User:
     return current_user
