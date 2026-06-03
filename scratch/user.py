@@ -26,15 +26,18 @@ fake_users_db = {
 }
 
 
+# The response you send back after successful login
 class Token(BaseModel):
     access_token: str
     token_type: str
 
 
+# The data you extract FROM a JWT after decoding it
 class TokenData(BaseModel):
     username: str | None = None
 
 
+# The safe user representation, pull out sub, store it in TokenData.username
 class User(BaseModel):
     username: str
     email: str | None = None
@@ -42,30 +45,37 @@ class User(BaseModel):
     disabled: bool | None = None
 
 
+# The database version of a user
 class UserInDB(User):
     hashed_password: str
 
 
+# This is the input shape for /register/. User submits plaintext password here
 class RegisterUser(BaseModel):
     username: str
     password: str
     email: str | None = None
     full_name: str | None = None
 
-
-# create a password hashing security engine
+# A PasswordHash object configured with Argon2id using
+# secure recommended settings (65536 KB memory, 3 iterations, 4 parallel threads)
 # knows: how to hash passwords & verify passwords
 password_hash = PasswordHash.recommended()
 
 def get_password_hash(password):
-    # generate random salt + mix with password +
-    # + argon2 hash + store everything in one string
+    """
+    Takes plaintext string → generate random salt + mix with password + argon2 hash + store everything in one string.
+    """
     return password_hash.hash(password)
 
 admin_password = "admin123"
 
+# Runs at startup. It dynamically hashes the admin password
+# and stores it in the fake database
 fake_users_db["admin"]["hashed_password"] = get_password_hash(admin_password)
 
+# Pre-computed hash of a dummy password. Created once at startup.
+# Used in authenticate_user to prevent timing attacks
 DUMMY_HASH = password_hash.hash("dummypassword")
 
 # TOKEN EXTRACTOR DEPENDENCY
@@ -75,6 +85,15 @@ app = FastAPI()
 
 
 def verify_password(plain_password, hashed_password):
+    """
+    What it does in memory:
+    * Takes plain_password (what the user typed) — e.g. "admin123"
+    * Takes hashed_password (what's stored) — e.g. "$argon2id$v=19$m=65536..."
+    * Extracts the salt from hashed_password
+    * Runs Argon2 on plain_password using that SAME salt
+    * Compares the resulting hash to the stored hash
+    * Returns True if they match, False if not
+    """
     return password_hash.verify(plain_password, hashed_password)
 
 
