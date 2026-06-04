@@ -15,7 +15,9 @@ from app.models import UserSignup, UserLogin, Token, UserResponse # type: ignore
 from app.db_models import UserDB # type: ignore
 # Auth logic
 from app.auth import hash_password, verify_password, create_access_token, get_current_user # type: ignore
-from datetime import datetime
+from datetime import datetime, timezone
+from fastapi.security import OAuth2PasswordRequestForm
+from typing import Annotated
 
 # All routes start with /auth = /signup → /auth/signup → /auth/login
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -27,7 +29,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 #    parses JSON
 #    validates using UserSignup
 #    gives user.email, user.password
-async def signu0p(user: UserSignup, db: AsyncSession = Depends(get_db)):
+async def signup(user: UserSignup, db: AsyncSession = Depends(get_db)):
     """
     Create a new user account.
 
@@ -60,7 +62,7 @@ async def signu0p(user: UserSignup, db: AsyncSession = Depends(get_db)):
     new_user = UserDB(
         email=user.email,
         hashed_password=hashed_pw,
-        created_at=datetime.utcnow().isoformat()
+        created_at=datetime.now(timezone.utc).isoformat()
     )
 
     db.add(new_user) # stage insert
@@ -76,7 +78,7 @@ async def signu0p(user: UserSignup, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=Token)
-async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
+async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: AsyncSession = Depends(get_db)):
     """
     Login and receive JWT access token.
 
@@ -84,9 +86,11 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
     - Verifies password
     - Returns JWT token
     """
+    email = form_data.username
+    password = form_data.password
 
     # Find user
-    query = select(UserDB).where(UserDB.email == user.email)
+    query = select(UserDB).where(UserDB.email == email)
     result = await db.execute(query)
     db_user = result.scalar_one_or_none()
 
@@ -99,7 +103,7 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
     # Verify password. If password is NOT correct → reject login
     # It’s not stored. It's just: True / False check
     # inside verify = pwd_context.verify(plain, hash)
-    if not verify_password(user.password, db_user.hashed_password):
+    if not verify_password(password, db_user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
@@ -108,14 +112,19 @@ async def login(user: UserLogin, db: AsyncSession = Depends(get_db)):
     # Create JWT token
     # sub = "Subject" (standard JWT claim, usually user identifier)
     # user_id = Custom claim (App's user ID)
-    access_token = create_access_token(data={"sub": db_user.email, "user_id": db_user.id})
+    access_token = create_access_token(
+        data={
+        "sub": db_user.email,
+        "user_id": db_user.id
+        }
+    )
 
     # Client store this and send it later
     return Token(access_token=access_token, token_type="bearer")
 
 # The dependency (Depends(get_current_user)) does ALL the validation
 @router.get("/me", response_model=UserResponse)
-async def get_current_user_info(user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def get_current_user_info(user: Annotated[dict, Depends(get_current_user)], db: AsyncSession = Depends(get_db)):
     """
     Get current user's info.
 

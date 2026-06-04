@@ -146,7 +146,11 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
+# Annotated + Depends:
+# Run oauth2_scheme()
+# whatever it returns,
+# put it into token
+# and token should be a string"
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
     jwt.decode does THREE things simultaneously:
