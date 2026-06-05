@@ -5,13 +5,14 @@ from app.models import WeatherResponse # type:ignore
 from app.db_models import WeatherDB # type:ignore
 from app.services.openweather import fetch_weather # type:ignore
 from datetime import datetime
+from typing import Annotated
 
 # prefix="/weather" = all routes start with /weather
 # So @router.get("/{city}") becomes /weather/{city}
 router = APIRouter(prefix="/weather", tags=["weather"])
 
 @router.get("/{city}", response_model=WeatherResponse)
-async def get_weather(city: str, db: AsyncSession = Depends(get_db)):
+async def get_weather(city: str, db: Annotated[AsyncSession, Depends(get_db)]):
     """
     Fetch current weather for a city.
 
