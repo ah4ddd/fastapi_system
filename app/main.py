@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import items, weather, github, crypto, auth # type: ignore
+from .routers import items, weather, github, crypto, auth
 
 app = FastAPI( # central server object
     title="FastAPI System",
