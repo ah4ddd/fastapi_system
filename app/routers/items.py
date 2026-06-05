@@ -36,6 +36,8 @@ from app.models import ItemCreate, ItemInPublic, CreateItemResponse # type: igno
 from app.db_models import ItemDB # type: ignore
 from app.database import get_db # type: ignore
 
+from typing import Annotated
+
 # Rule: Anything that performs I/O (talks to the DB over network) needs await.
 """
 APIRouter Configuration
@@ -56,7 +58,10 @@ await db.commit()"""
 @router.post("/", response_model=CreateItemResponse, status_code=status.HTTP_201_CREATED)
 # Injects a database session into endpoint, calls get_db(),
 # gets the session, injects it as 'db', ItemCreate = Pydantic model (API layer)
-async def create_item(item: ItemCreate, db: AsyncSession = Depends(get_db)):
+async def create_item(
+    item: ItemCreate,
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
     """Create new item with SQLAlchemy model (DB layer) = ItemDB
     This represents:
     Database table, Columns, Rows
