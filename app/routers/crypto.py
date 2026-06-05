@@ -7,13 +7,16 @@ from app.models import CryptoPricesResponse, CryptoPrice, CryptoHistory # type: 
 from app.db_models import CryptoPriceDB # type: ignore
 from app.services.coingecko import fetch_crypto_prices, transform_price_data # type: ignore
 from app.auth import get_current_user # type: ignore
-from datetime import datetime
-from typing import List
+from datetime import datetime, timezone
+from typing import List, Annotated
 
 router = APIRouter(prefix="/crypto", tags=["crypto"])
 
 @router.get("/latest", response_model=CryptoPricesResponse)
-async def get_top_crypto_prices(limit: int = Query(5, ge=1, le=5), db: AsyncSession = Depends(get_db)):
+async def get_top_crypto_prices(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    limit: int = Query(5, ge=1, le=5),
+    ):
     """
     Fetch current prices for top coins (HARDCODED).
 
@@ -39,7 +42,7 @@ async def get_top_crypto_prices(limit: int = Query(5, ge=1, le=5), db: AsyncSess
     prices = transform_price_data(raw_data)
 
     # Current timestamp
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     # Store in database
     # One commit for all 3 coins. Efficient.
@@ -67,7 +70,10 @@ async def get_top_crypto_prices(limit: int = Query(5, ge=1, le=5), db: AsyncSess
 
 
 @router.get("/prices/{coin_id}")
-async def get_crypto_prices(coin_id: str, db: AsyncSession = Depends(get_db)):
+async def get_crypto_prices(
+    coin_id: str,
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
     """
     Fetch current prices via path parameter.
 
@@ -89,7 +95,7 @@ async def get_crypto_prices(coin_id: str, db: AsyncSession = Depends(get_db)):
     prices = transform_price_data(raw_data)
 
     # Current timestamp
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(timezone.utc).isoformat()
 
     # Store in database
     price = prices[0]
@@ -110,7 +116,10 @@ async def get_crypto_prices(coin_id: str, db: AsyncSession = Depends(get_db)):
 
 # This endpoint reads from database, not CoinGecko.
 @router.get("/history", response_model=List[CryptoHistory])
-async def get_price_history(symbol: str, limit: int, db: AsyncSession = Depends(get_db)):
+async def get_price_history(
+    symbol: str, limit: int,
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
     """
     Get historical price data for a cryptocurrency from database.
 
@@ -161,8 +170,9 @@ async def get_price_history(symbol: str, limit: int, db: AsyncSession = Depends(
 # Depends() runs a function before route and injects its result.
 async def get_my_crypto_history(
     limit: int,
-    user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)):
+    user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
     """
     Get fetched crypto prices.
 

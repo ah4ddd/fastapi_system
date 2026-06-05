@@ -119,7 +119,7 @@ The session abstracts that layer.
     AsyncSessionLocal creates a new session every time you call it.
 """
 AsyncSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
+    engine, class_= AsyncSession, expire_on_commit=False
 )
 
 # Dependency that FastAPI will use to inject database sessions into endpoints.
