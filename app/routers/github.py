@@ -5,12 +5,16 @@ from app.models import GitHubReposResponse, GitHubRepo # type:ignore
 from app.db_models import GitHubRepoDB # type:ignore
 from app.services.github_api import fetch_user_repos, extract_top_repos # type:ignore
 from datetime import datetime
+from typing import Annotated
 
 router = APIRouter(prefix="/github", tags=["github"])
 
 
 @router.get("/repos/{username}", response_model=GitHubReposResponse)
-async def get_user_repos(username: str, db: AsyncSession = Depends(get_db)):
+async def get_user_repos(
+    username: str,
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
     """
     Fetch GitHub user's top repositories by star count.
 
