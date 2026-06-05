@@ -1,11 +1,10 @@
 from fastapi import FastAPI
-# Loads the items.py file.
 from app.routers import items, weather, github, crypto, auth # type: ignore
 
 app = FastAPI( # central server object
     title="FastAPI System",
     description="CRUD API with async support",
-    version="1.2.0"
+    version="1.3.0"
 )
 
 # Take all routes registered on this router and attach them to the main app
