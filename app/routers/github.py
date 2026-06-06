@@ -4,7 +4,7 @@ from app.database import get_db # type:ignore
 from app.models import GitHubReposResponse, GitHubRepo # type:ignore
 from app.db_models import GitHubRepoDB # type:ignore
 from app.services.github_api import fetch_user_repos, extract_top_repos # type:ignore
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated
 
 router = APIRouter(prefix="/github", tags=["github"])
@@ -42,7 +42,7 @@ async def get_user_repos(
     top_repos = extract_top_repos(repos, limit=10)
 
     # Current timestamp
-    fetched_at = datetime.utcnow().isoformat()
+    fetched_at = datetime.now(timezone.utc).isoformat
 
     # Store each repo in database
     # Loop through repos, create DB object for each, commit once at end
