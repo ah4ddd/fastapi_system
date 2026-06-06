@@ -4,7 +4,7 @@ from app.database import get_db # type:ignore
 from app.models import WeatherResponse # type:ignore
 from app.db_models import WeatherDB # type:ignore
 from app.services.openweather import fetch_weather # type:ignore
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated
 
 # prefix="/weather" = all routes start with /weather
@@ -35,7 +35,7 @@ async def get_weather(city: str, db: Annotated[AsyncSession, Depends(get_db)]):
     description = weather_data["weather"][0]["description"]
     humidity = weather_data["main"]["humidity"]
     # UTC — Coordinated Universal Time
-    timestamp = datetime.utcnow()
+    timestamp = datetime.now(timezone.utc).isoformat
 
     # Store in database
     db_weather = WeatherDB(
