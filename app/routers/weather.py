@@ -35,7 +35,7 @@ async def get_weather(city: str, db: Annotated[AsyncSession, Depends(get_db)]):
     description = weather_data["weather"][0]["description"]
     humidity = weather_data["main"]["humidity"]
     # UTC — Coordinated Universal Time
-    timestamp = datetime.now(timezone.utc).isoformat
+    timestamp = datetime.now(timezone.utc)
 
     # Store in database
     db_weather = WeatherDB(

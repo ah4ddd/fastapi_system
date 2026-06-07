@@ -29,7 +29,7 @@ class WeatherDB(Base):
     temperature = Column(Float, nullable=False)
     description = Column(String, nullable=False)
     humidity = Column(Integer, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False)
 
 class GitHubRepoDB(Base):
     __tablename__ = "github_repos"
