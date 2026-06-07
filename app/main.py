@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from .routers import items, weather, github, crypto, auth
 
-app = FastAPI( # central server object
+app = FastAPI(
     title="FastAPI System",
     description="CRUD API with async support",
     version="1.3.0"
