@@ -4,7 +4,7 @@ from app.database import get_db # type:ignore
 from app.models import WeatherResponse # type:ignore
 from app.db_models import WeatherDB # type:ignore
 from app.services.openweather import fetch_weather # type:ignore
-from datetime import datetime, timezone
+from datetime import datetime, timezone # Python's built-in date + time object
 from typing import Annotated
 
 # prefix="/weather" = all routes start with /weather
@@ -34,7 +34,10 @@ async def get_weather(city: str, db: Annotated[AsyncSession, Depends(get_db)]):
     temp = weather_data["main"]["temp"]
     description = weather_data["weather"][0]["description"]
     humidity = weather_data["main"]["humidity"]
-    # UTC — Coordinated Universal Time
+    # Create a timezone-aware UTC datetime object
+    # representing the exact current moment.
+    # .now() = the current date and time RIGHT NOW
+    # This datetime is specifically in UTC timezone
     timestamp = datetime.now(timezone.utc)
 
     # Store in database
