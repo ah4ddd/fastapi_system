@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from .routers import items, weather, github, crypto, auth
+import time
 
 app = FastAPI(
     title="FastAPI System",
@@ -28,6 +29,18 @@ app.include_router(weather.router)
 app.include_router(github.router)
 app.include_router(crypto.router)
 app.include_router(auth.router)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.perf_counter()
+    print(f"Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    process_time = time.perf_counter() - start_time
+    print(f"Completed in {process_time:.4f} seconds")
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
 
 # Root endpoints
 @app.get("/")
