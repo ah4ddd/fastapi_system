@@ -30,14 +30,34 @@ app.include_router(github.router)
 app.include_router(crypto.router)
 app.include_router(auth.router)
 
+"""
+Middleware is:
+    a global interception layer
 
-@app.middleware("http")
+It sits BETWEEN:
+    incoming request
+    your route
+
+and ALSO between:
+    your route
+    outgoing response
+"""
+@app.middleware("http") # Register this function as middleware for HTTP requests
+# FastAPI later calls this function automatically
+# request: Request = Incoming HTTP request object
+# call_next = internal continuation function
 async def log_requests(request: Request, call_next):
-    start_time = time.perf_counter()
+    start_time = time.perf_counter() # Stores precise timer
+    # Logs incoming request BEFORE route executes
     print(f"Incoming request: {request.method} {request.url}")
-    response = await call_next(request)
-    process_time = time.perf_counter() - start_time
+    # Before this line: middleware has control
+    # After this line: route system has control
+    # Then AFTER route finishes: control RETURNS BACK to middleware
+    # call_next() returns the route response
+    response = await call_next(request) # continue request lifecycle
+    process_time = time.perf_counter() - start_time # calculate duration
     print(f"Completed in {process_time:.4f} seconds")
+    # Adds custom HTTP header
     response.headers["X-Process-Time"] = str(process_time)
     return response
 
