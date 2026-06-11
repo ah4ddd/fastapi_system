@@ -9,7 +9,6 @@ app = FastAPI(
 )
 
 # Take all routes registered on this router and attach them to the main app
-
 """
 FastAPI App
 │
@@ -42,14 +41,62 @@ and ALSO between:
     your route
     outgoing response
 """
+"""
+This line:
+    response = await call_next(request)
+
+is literally:
+    the entire request lifecycle compressed into one line.
+    continue processing this request through routing system.
+
+Because inside that ONE line:
+    route runs
+    dependencies run
+    JWT auth runs
+    DB queries run
+    response gets created
+    exceptions may happen
+    serialization happens
+
+FastAPI now does something LIKE:
+    find matching route (eg: @app.get("/users/me"))
+    ↓
+    run dependencies
+    ↓
+    run JWT auth
+    ↓
+    extract token
+    ↓
+    decode token
+    ↓
+    verify token
+    ↓
+    run DB query
+    ↓
+    execute route
+    ↓
+    create Response object
+    ↓
+    return response
+
+ALL of that happens INSIDE:
+    await call_next(request)
+ALL INSIDE THAT ONE LINE.
+"""
 @app.middleware("http") # Register this function as middleware for HTTP requests
 # FastAPI later calls this function automatically
 # request: Request = Incoming HTTP request object
 # call_next = internal continuation function
+# the SECOND parameter is expected to be: a callable function object
+# Always. That is the middleware contract.
+# FastAPI internally guarantees:
+# parameter 1 = Request object
+# parameter 2 = next callable function
 async def log_requests(request: Request, call_next):
     start_time = time.perf_counter() # Stores precise timer
     # Logs incoming request BEFORE route executes
     print(f"Incoming request: {request.method} {request.url}")
+    # continue request deeper into FastAPI
     # Before this line: middleware has control
     # After this line: route system has control
     # Then AFTER route finishes: control RETURNS BACK to middleware
@@ -57,9 +104,10 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request) # continue request lifecycle
     process_time = time.perf_counter() - start_time # calculate duration
     print(f"Completed in {process_time:.4f} seconds")
-    # Adds custom HTTP header
+    # Adds custom HTTP header.
+    # Response object contains: headers, status code, body, etc.
     response.headers["X-Process-Time"] = str(process_time)
-    return response
+    return response # the final response
 
 
 # Root endpoints
