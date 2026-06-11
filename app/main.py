@@ -58,7 +58,7 @@ Because inside that ONE line:
     exceptions may happen
     serialization happens
 
-FastAPI now does something LIKE:
+FastAPI MAY do something like::
     find matching route (eg: @app.get("/users/me"))
     ↓
     run dependencies
