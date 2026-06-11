@@ -58,6 +58,10 @@ Because inside that ONE line:
     exceptions may happen
     serialization happens
 
+call_next: This is the PAUSE POINT.
+Everything before call_next runs before the endpoint.
+Everything after runs after the endpoint.
+
 FastAPI MAY do something like::
     find matching route (eg: @app.get("/users/me"))
     ↓
@@ -80,8 +84,25 @@ FastAPI MAY do something like::
     return response
 
 ALL of that happens INSIDE:
-    await call_next(request)
-ALL INSIDE THAT ONE LINE.
+    await call_next(request) NSIDE THIS ONE LINE.
+
+The Execution Flow Visualized:
+    Client sends: GET /items/
+            ↓
+    MIDDLEWARE STARTS
+    start_time = now
+            ↓
+    call_next(request) ← PAUSE, endpoint runs
+            ↓
+    endpoint runs: reads DB, builds response
+            ↓
+    MIDDLEWARE RESUMES with response
+    process_time = now - start_time
+    response.headers["X-Process-Time"] = "0.043"
+            ↓
+    return response
+            ↓
+    Client receives response WITH the extra header
 """
 @app.middleware("http") # Register this function as middleware for HTTP requests
 # FastAPI later calls this function automatically
@@ -106,6 +127,9 @@ async def log_requests(request: Request, call_next):
     print(f"Completed in {process_time:.4f} seconds")
     # Adds custom HTTP header.
     # Response object contains: headers, status code, body, etc.
+    # The X- prefix is convention for custom headers
+    # it means "this is not a standard HTTP header,
+    # it's application-specific
     response.headers["X-Process-Time"] = str(process_time)
     return response # the final response
 
