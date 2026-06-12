@@ -149,9 +149,9 @@ async def log_requests(request: Request, call_next):
     return response # the final response
 
 # CORS (cross origin resource sharing)
-# A special middleware that intercepts browser requests
-# and tells the browser which frontend origins
-# are allowed to talk to backend.
+# CORS is a browser-enforced permission system that allows
+# a frontend running on one origin e.g. localhost:3000
+# to communicate with a backend running on another origin e.g. localhost:8000
 """
 Why is CORS middleware?
 Because the backend must answer that request for EVERY route.
