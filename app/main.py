@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from .routers import items, weather, github, crypto, auth
 import time
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="FastAPI System",
@@ -28,6 +29,19 @@ app.include_router(weather.router)
 app.include_router(github.router)
 app.include_router(crypto.router)
 app.include_router(auth.router)
+
+
+# Root endpoints
+@app.get("/")
+async def read_root():
+    return {"message": "System is alive"}
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy"
+    }
+
 
 """
 Middleware is:
@@ -133,17 +147,6 @@ async def log_requests(request: Request, call_next):
     response.headers["X-Process-Time"] = str(process_time)
     return response # the final response
 
-
-# Root endpoints
-@app.get("/")
-async def read_root():
-    return {"message": "System is alive"}
-
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy"
-    }
 
 """
 Full lifecycle (what FastAPI actually does)
