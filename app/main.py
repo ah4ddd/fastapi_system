@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from .routers import items, weather, github, crypto, auth
 import time
+# Built-in CORS middleware class
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
@@ -146,6 +147,76 @@ async def log_requests(request: Request, call_next):
     # it's application-specific
     response.headers["X-Process-Time"] = str(process_time)
     return response # the final response
+
+# CORS (cross origin resource sharing)
+# A special middleware that intercepts browser requests
+# and tells the browser which frontend origins
+# are allowed to talk to backend.
+"""
+Why is CORS middleware?
+Because the backend must answer that request for EVERY route.
+
+middleware lesson:
+    @app.middleware("http")
+        gets:
+            request
+            ↓
+            route
+            ↓
+            response
+
+CORS needs exactly that.
+Because it must intercept requests.
+
+Visualize:
+    Browser
+    ↓
+    Request
+    ↓
+    CORSMiddleware
+    ↓
+    Route
+    ↓
+    Response
+    ↓
+    CORSMiddleware
+    ↓
+    Browser
+
+Why?
+
+Because Before route. CORS needs to Inspect:
+    Origin: localhost:3000
+
+And after route. Add Access-Control-Allow-Origin:
+    http://localhost:3000
+to response headers.
+
+That's literally middleware behavior:
+    before route
+    after route
+
+which is why CORS is implemented as middleware.
+Because it:
+    Intercepts every request and response
+    specifically to tell browsers
+    which frontend origins are trusted.
+"""
+app.add_middleware( # Attach middleware to application.
+    CORSMiddleware,
+    # Origins are addresses (protocol + domain + port)
+    allow_origins=[
+        # Trusted frontends
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    # This one matters for auth.
+    allow_credentials=True,
+    # All methods allowed
+    allow_methods=["*"],
+    # All headers allowed
+    allow_headers=["*"],
+)
 
 
 """
