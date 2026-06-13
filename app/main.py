@@ -214,10 +214,11 @@ app.add_middleware( # Attach middleware to application.
     # Origins are addresses (protocol + domain + port)
     allow_origins=[
         # Trusted frontends
-        "http://localhost:3000", # React
-        "http://localhost:5173", # Vite
+        "http://localhost:3000",
+        "http://localhost:5173",
         "http://localhost:5500",
-        "http://localhost:8080" # anything else
+        "http://127.0.0.1:5500",
+        "http://localhost:8080",
     ],
     # This one matters for auth.
     allow_credentials=True,
