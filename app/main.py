@@ -216,6 +216,7 @@ app.add_middleware( # Attach middleware to application.
         # Trusted frontends
         "http://localhost:3000", # React
         "http://localhost:5173", # Vite
+        "http://localhost:5500",
         "http://localhost:8080" # anything else
     ],
     # This one matters for auth.
