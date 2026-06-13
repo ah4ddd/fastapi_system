@@ -202,20 +202,31 @@ Because it:
     specifically to tell browsers
     which frontend origins are trusted.
 """
+# That's it. This middleware intercepts every OPTIONS preflight
+# and every request, checks if the origin is in your allowed list,
+# and adds the right headers automatically.
+# Order matters. CORS middleware should be added
+# before your custom logging middleware.
+# CORS is outermost, runs first on requests.
 app.add_middleware( # Attach middleware to application.
     CORSMiddleware,
+    # which frontends are allowed to talk to your API
     # Origins are addresses (protocol + domain + port)
     allow_origins=[
         # Trusted frontends
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
+        "http://localhost:3000", # React
+        "http://localhost:5173", # Vite
+        "http://localhost:8080" # anything else
     ],
     # This one matters for auth.
     allow_credentials=True,
-    # All methods allowed
+    # Allow GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD.
     allow_methods=["*"],
-    # All headers allowed
+    # Allow any request header.
     allow_headers=["*"],
+    # Include custom header
+    # (By default the browser hides custom headers from JavaScript)
+    expose_headers=["X-Process-Time"]
 )
 
 
