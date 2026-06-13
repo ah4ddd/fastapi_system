@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Body, Depends, Query
+from fastapi import FastAPI, Body, Depends, Query, HTTPException
 from pydantic import BaseModel
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+
 
 app = FastAPI()
 
@@ -109,6 +110,14 @@ def read_heroes(
 ) -> list[Hero]:
     heroes = session.exec(select(Hero).offset(offset).limit(limit)).all()
     return heroes # type: ignore
+
+
+@app.get("/heroes/{hero_id}")
+def read_hero(hero_id: int, session: SessionDep) -> Hero:
+    hero = session.get(Hero, hero_id)
+    if not hero:
+        raise HTTPException(status_code=404, detail="Hero not found")
+    return hero
 
 
 
