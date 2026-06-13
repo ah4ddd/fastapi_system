@@ -2,15 +2,31 @@
 <html>
 
 <head>
-    <title>FastAPI CORS Test</title>
+    <title>FastAPI Auth Test</title>
 </head>
 
 <body>
 
-    <h1>FastAPI CORS Test</h1>
+    <h1>FastAPI Frontend Test</h1>
+
+    <hr>
 
     <button onclick="getHealth()">
-        Call Backend
+        Health Check
+    </button>
+
+    <h3>Login</h3>
+
+    <input id="username" type="email" placeholder="email">
+
+    <input id="password" type="password" placeholder="password">
+
+    <button onclick="login()">
+        Login
+    </button>
+
+    <button onclick="getMyProfile()">
+        Get Profile
     </button>
 
     <hr>
@@ -18,10 +34,11 @@
     <h3>Status</h3>
     <div id="status">Waiting...</div>
 
-    <h3>Raw Response JSON</h3>
+    <h3>Response</h3>
     <pre id="result"></pre>
 
     <script>
+
         async function getHealth() {
 
             document.getElementById("status").textContent =
@@ -30,7 +47,7 @@
             try {
 
                 const response = await fetch(
-                    "http://127.0.0.1:8000/"
+                    "http://127.0.0.1:8000/health"
                 );
 
                 const data = await response.json();
@@ -40,9 +57,6 @@
 
                 document.getElementById("result").textContent =
                     JSON.stringify(data, null, 2);
-
-                console.log("Response object:", response);
-                console.log("Response data:", data);
 
             } catch (error) {
 
@@ -55,6 +69,115 @@
                 console.error(error);
             }
         }
+
+        async function login() {
+
+            const username =
+                document.getElementById("username").value;
+
+            const password =
+                document.getElementById("password").value;
+
+            try {
+
+                const response = await fetch(
+                    "http://127.0.0.1:8000/auth/login",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({
+                            username: username,
+                            password: password
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+
+                    document.getElementById("status").textContent =
+                        "Login Failed";
+
+                    document.getElementById("result").textContent =
+                        JSON.stringify(data, null, 2);
+
+                    return;
+                }
+
+                localStorage.setItem(
+                    "token",
+                    data.access_token
+                );
+
+                document.getElementById("status").textContent =
+                    "Login Successful";
+
+                document.getElementById("result").textContent =
+                    JSON.stringify(data, null, 2);
+
+                console.log("Stored token:", data.access_token);
+
+            } catch (error) {
+
+                document.getElementById("status").textContent =
+                    "Login Error";
+
+                document.getElementById("result").textContent =
+                    error;
+
+                console.error(error);
+            }
+        }
+
+        async function getMyProfile() {
+
+            const token =
+                localStorage.getItem("token");
+
+            if (!token) {
+
+                document.getElementById("status").textContent =
+                    "No JWT token found. Login first.";
+
+                return;
+            }
+
+            try {
+
+                const response = await fetch(
+                    "http://127.0.0.1:8000/auth/me",
+                    {
+                        headers: {
+                            "Authorization":
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                document.getElementById("status").textContent =
+                    `HTTP ${response.status} ${response.statusText}`;
+
+                document.getElementById("result").textContent =
+                    JSON.stringify(data, null, 2);
+
+            } catch (error) {
+
+                document.getElementById("status").textContent =
+                    "Profile Request Failed";
+
+                document.getElementById("result").textContent =
+                    error;
+
+                console.error(error);
+            }
+        }
+
     </script>
 
 </body>
