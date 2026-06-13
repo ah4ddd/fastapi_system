@@ -10,6 +10,13 @@ app = FastAPI()
 async def hello():
     return {"LETS DO IT FROM SCRATCH"}
 
+sqlite_file_name = "database.db"
+sqlite_url = f"sqlite:///{sqlite_file_name}"
+
+connect_args = {"check_same_thread": False}
+engine = create_engine(sqlite_url, connect_args=connect_args)
+
+
 class Hero(SQLModel, table=True): # represent a table
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
