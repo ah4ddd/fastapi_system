@@ -2,12 +2,19 @@ from fastapi import FastAPI, Body, Depends
 from pydantic import BaseModel
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 app = FastAPI()
 
 @app.get("/hello/")
 async def hello():
     return {"LETS DO IT FROM SCRATCH"}
+
+class Hero(SQLModel, table=True): # represent a table
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    age: int | None = Field(default=None, index=True)
+    secret_name: str
 
 class AuthUser(BaseModel):
     username: str
