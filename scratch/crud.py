@@ -88,6 +88,20 @@ def get_session():
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
+
+
+@app.post("/heroes/")
+def create_hero(hero: Hero, session: SessionDep) -> Hero:
+    session.add(hero)
+    session.commit()
+    session.refresh(hero)
+    return hero
+
+
+
 
 
 @app.post("/addition/")
