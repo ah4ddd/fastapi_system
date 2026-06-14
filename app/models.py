@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List
 
+# Pydantic API models
+
 # What the CLIENT sends (input)
 class ItemCreate(BaseModel):
     name: str = Field(min_length=3)

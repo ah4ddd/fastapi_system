@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 import os
 from dotenv import load_dotenv
 
+# engine. sessions. dependency injection
+
 # Loads environment variables from .env file.
 load_dotenv()
 

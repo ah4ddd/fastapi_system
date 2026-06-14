@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime
 from sqlalchemy.orm import declarative_base
 
+# SQLAlchemy database models
+
 #Creates a base class, all database models inherit from it.
 Base = declarative_base()
 
