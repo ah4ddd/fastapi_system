@@ -160,27 +160,3 @@ def delete_hero(hero_id: int, session: SessionDep):
     session.commit()
     return {"ok": True}
 
-
-@app.post("/addition/")
-async def add(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a + b
-
-@app.post("/subtraction/")
-async def sub(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a - b
-
-@app.post("/multiplication/")
-async def multiply(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a * b
-
-@app.post("/division/")
-async def divide(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a / b
-
-@app.post("/floordivision/")
-async def fd(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a // b
-
-@app.post("/modulo/")
-async def modular(a: Annotated[int, Body()], b: Annotated[int, Body()]):
-    return a % b
