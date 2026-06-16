@@ -127,12 +127,16 @@ async def get_price_history(
     """
 
     # Query database
+    # SELECT *
+    # FROM crypto_prices
+    # WHERE symbol = 'BTC'
+    # LIMIT 100;
     query = (
-        # get me data AND map each row into a CryptoPriceDB object
-        select(CryptoPriceDB) # “SELECT * FROM crypto_prices
+        # Get data AND map each row into a CryptoPriceDB object
+        select(CryptoPriceDB) # SELECT * FROM crypto_prices
         .where(CryptoPriceDB.symbol == symbol) # WHERE symbol = 'bitcoin'
         .order_by(CryptoPriceDB.timestamp.desc()) # ORDER BY timestamp DESC
-        .limit(limit) # LIMIT 100 (how much of history user wants to see)
+        .limit(limit) # LIMIT (how much of history user wants to see)
     )
 
     # wrapper object (send query to DB)

@@ -149,8 +149,9 @@ async def get_current_user_info(
     # WHERE email = 'ahad@gmail.com';
     # maps to: users through: __tablename__ = "users"
     query = select(UserDB).where(UserDB.email == email)
-    result = await db.execute(query)
-    db_user = result.scalar_one_or_none()
+    # database response container
+    result = await db.execute(query) # the moment SQL gets sent
+    db_user = result.scalar_one_or_none() # expects: 0 or 1 row only.
 
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
