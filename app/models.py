@@ -98,3 +98,7 @@ class UserResponse(BaseModel):
     id: int
     email: str
     created_at: str
+
+class PasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str

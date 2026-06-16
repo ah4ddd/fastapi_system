@@ -10,7 +10,7 @@ from sqlalchemy import select # SQL query builder
 # db session injection
 from app.database import get_db # type: ignore
 # Pydantic models
-from app.models import UserSignup, UserLogin, Token, UserResponse # type: ignore
+from app.models import UserSignup, UserLogin, Token, UserResponse, PasswordUpdate # type: ignore
 # Actual db table model. UserDB = DB structure. UserSignup = API input
 from app.db_models import UserDB # type: ignore
 # Auth logic
@@ -161,6 +161,48 @@ async def get_current_user_info(
         email=db_user.email,
         created_at=db_user.created_at
     )
+
+
+@router.put("/password")
+async def update_password(
+    password_data: PasswordUpdate,
+    user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)]
+):  # Get email from JWT
+    email = user.get("sub")
+
+    query = select(UserDB).where(
+        UserDB.email == email
+    )
+    # SELECT *
+    # FROM users
+    # WHERE email='ahad@gmail.com';
+    result = await db.execute(query)
+    db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    # Verify old password
+    if not verify_password(
+        password_data.current_password,
+        db_user.hashed_password
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid current password"
+        )
+    # Hash new password & update object
+    db_user.hashed_password = hash_password(password_data.new_password)
+
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+
+    return {"detail": "Password updated successfully"}
+
 
 
 """
