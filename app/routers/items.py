@@ -255,8 +255,13 @@ Database updates row
 
 @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
-    """Delete an item"""
-    # Find row
+    """
+    Delete an item:
+    """
+
+    # SELECT *
+    # FROM items
+    # WHERE id = 5;
     result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
     item = result.scalar_one_or_none()
 
@@ -266,8 +271,8 @@ async def delete_item(item_id: int, db: AsyncSession = Depends(get_db)):
             detail=f"Item with ID {item_id} does not exist"
         )
 
-    await db.delete(item)  # Stage for deletion
-    await db.commit()  # Execute DELETE query
+    await db.delete(item)  # item cheduled for deletion (session memory)
+    await db.commit()  # Execute DELETE query.
 """
 Lifecycle for DELETE
 Client sends DELETE /items/5
