@@ -197,12 +197,34 @@ async def update_password(
     # Hash new password & update object
     db_user.hashed_password = hash_password(password_data.new_password)
 
-    db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
 
     return {"detail": "Password updated successfully"}
 
+
+@router.delete("/me/")
+async def delete_account(
+    user: Annotated[dict, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    email = user.get("sub")
+    # DELETE
+    # FROM users
+    # WHERE email='ahad@gmail.com';
+    query = select(UserDB).where(
+        UserDB.email == email
+    )
+
+    result = await db.execute(query)
+
+    db_user = result.scalar_one_or_none()
+
+    await db.delete(db_user)
+
+    await db.commit()
+
+    return {"message": "Account deleted successfully"}
 
 
 """
