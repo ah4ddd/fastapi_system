@@ -58,7 +58,7 @@ async def signup(
             detail="Email already registered"
         )
 
-    # Plain → bcrypt hash `return pwd_context.hash(password)``
+    # Plain → current hash
     hashed_pw = hash_password(user.password)
 
     # Create user DB object
