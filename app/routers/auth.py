@@ -144,6 +144,10 @@ async def get_current_user_info(
     email = user.get("sub")
 
     # Fetch full user from database
+    # SELECT *
+    # FROM users
+    # WHERE email = 'ahad@gmail.com';
+    # maps to: users through: __tablename__ = "users"
     query = select(UserDB).where(UserDB.email == email)
     result = await db.execute(query)
     db_user = result.scalar_one_or_none()
