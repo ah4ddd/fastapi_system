@@ -123,9 +123,9 @@ Regular SQLAlchemy would block.
 engine = create_async_engine(ASYNC_DATABASE_URL, echo=True) # echo=True = Print every SQL query to the terminal
 
 
-# Creates a factory for database sessions. A session = a conversation with the database.
-"""Creates session factory for async sessions.
-use AsyncSession instead of regular Session
+# Creates a factory for database sessions.
+# A session = a conversation with the database.
+""" Use AsyncSession instead of regular Session
 - All methods return awaitable objects
 - You use await with them
 expire_on_commit=False = Don't clear object attributes after commit (keeps them accessible)
@@ -189,13 +189,13 @@ The session abstracts that layer.
     AsyncSessionLocal creates a new session every time you call it.
 """
 AsyncSessionLocal = async_sessionmaker(
-    engine, class_= AsyncSession, expire_on_commit=False
+    engine, class_= AsyncSession, expire_on_commit=False, autoflush=False
 )
 
 
 # Dependency that FastAPI will use to inject database sessions into endpoints.
-"""The heart of FastAPI + SQLAlchemy: get_db()
-This function is the entire bridge."""
+# The heart of FastAPI + SQLAlchemy: get_db()
+# This function is the entire bridge.
 async def get_db():
     """
     Yields a database session for a single request.
