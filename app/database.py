@@ -1,19 +1,82 @@
+# engine. sessions. dependency injection
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 import os
 from dotenv import load_dotenv
 
-# engine. sessions. dependency injection
+"""
+PostrgeSQL NOTES:
+*   PostgreSQL Is A Running Program
+*   Also PostgreSQL Is A Server:
+        When PostgreSQL starts:
+            it opens a port.
+            Usually: 5432 (listens for SQL requests)
+*   Engine is Databse Manager:
+    Engine knows:
+        database address
+        driver
+        connection pool
+        SQL execution rules
+    Its a bridge between Python & PostgreSQL:
+            FastAPI
+                ↓
+            Engine
+                ↓
+            PostgreSQL
+*   CONNECTION. When Python talks to PostgreSQL:
+      it opens a network connection.
+      Literally. A socket.
+      One active communication channel
+        Like: Python
+                │
+                │ TCP connection
+                │
+                PostgreSQL
+*   POOL:
+     Engine keeps a pool:
+            Pool:
+            conn1
+            conn2
+            conn3
+            conn4
+    Already open. Already connected. Ready.
+        when request arrives:
+        Need DB?
+        Pool says:
+        Take conn2
+        Request finishes:
+        Return conn2.
+        Pool: Reuse. Reuse. Reuse. (Very fast)
+*   Session:
+     A session is workspace
+     Collecting operations then:
+      await db.commit()
+        SQL travels:
+            Session
+            ↓
+            Connection
+            ↓
+            PostgreSQL
+"""
+
 
 # Loads environment variables from .env file.
 load_dotenv()
 
 # Get the connection string from environment variables.
-DATABASE_URL = os.getenv("DATABASE_URL", "")
+# postgresql://user:pass@localhost:5432/mydb
+#  |         │               │      │      │
+#  |         │               │      │      └ database
+#  └Protocol │               │      └ port
+#            │               └host
+#            └login credentials
+DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL is not set")
 
-# Replace postgresql:// with postgresql+asyncpg:// for async because we're using asyncpg driver (async PostgreSQL driver)
+# Replace postgresql:// with postgresql+asyncpg:// for async
+# because we're using asyncpg driver (async PostgreSQL driver)
 ASYNC_DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+
 
 # create_async_engine instead of create_engine
 # engine is the database connection manager.
@@ -35,6 +98,10 @@ Connection pool
    ↓
 Database
 
+Basically:
+    "Hey PostgreSQL, here's my username, password,
+    host and port. Let's talk."
+
 Why it's called an engine:
 Because it drives communication with the database.
 It powers the entire DB layer.
@@ -54,6 +121,7 @@ Why async? Because we're using async def in FastAPI.
 Regular SQLAlchemy would block.
 """
 engine = create_async_engine(ASYNC_DATABASE_URL, echo=True) # echo=True = Print every SQL query to the terminal
+
 
 # Creates a factory for database sessions. A session = a conversation with the database.
 """Creates session factory for async sessions.
@@ -124,6 +192,7 @@ AsyncSessionLocal = async_sessionmaker(
     engine, class_= AsyncSession, expire_on_commit=False
 )
 
+
 # Dependency that FastAPI will use to inject database sessions into endpoints.
 """The heart of FastAPI + SQLAlchemy: get_db()
 This function is the entire bridge."""
@@ -139,6 +208,7 @@ async def get_db():
         # give it to the endpoint
         yield session # When endpoint finishes, session closes automatically
     print("Closing database session...") # proves the session lifecycle.
+
 
 """
 When an endpoint uses:
@@ -209,4 +279,10 @@ Factory: object that creates sessions
 Session: conversation with the database
 
 Connection: actual network socket to PostgreSQL
+
+FastAPI = one server
+
+PostgreSQL = another server
+
+SQLAlchemy = the translator + traffic manager between them
 """
