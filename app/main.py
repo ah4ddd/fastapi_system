@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+# relative import (current package)
 from .routers import items, weather, github, crypto, auth
 import time
 # Built-in CORS middleware class
@@ -23,6 +24,14 @@ FastAPI App
     ├── POST /items
     ├── PUT /items/{id}
     └── DELETE /items/{id}
+"""
+"""
+Main app now knows:
+    POST /auth/signup
+    POST /auth/login
+    GET /auth/me
+    DELETE /auth/me
+    PUT /auth/password
 """
 # include_router(items.router) = Take router.routes & attach them to app.routes
 app.include_router(items.router) # items.router → APIRouter instance
