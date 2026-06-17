@@ -2,6 +2,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 import os
 from dotenv import load_dotenv
+from typing import Annotated
+from fastapi import Depends
 
 """
 PostrgeSQL NOTES:
@@ -204,11 +206,14 @@ async def get_db():
     context, and ensures the session is closed after the request,
     The context manager handles cleanup."""
     print("Creating database session...")
-    async with AsyncSessionLocal() as session:
+    async with AsyncSessionLocal() as session: # create new session
         # give it to the endpoint
-        yield session # When endpoint finishes, session closes automatically
+        yield session # give it to the endpoint
+    # When endpoint finishes, session closes automatically
     print("Closing database session...") # proves the session lifecycle.
 
+# might use this in future
+DBDep = Annotated[AsyncSession, Depends(get_db)]
 
 """
 When an endpoint uses:
