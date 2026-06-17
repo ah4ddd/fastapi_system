@@ -62,11 +62,12 @@ async def create_item(
     item: ItemCreate,
     db: Annotated[AsyncSession, Depends(get_db)]
     ):
-    """Create new item with SQLAlchemy model (DB layer) = ItemDB
-    This represents:
-    Database table, Columns, Rows
-    This is what actually maps to PostgreSQL"""
-    new_item = ItemDB( # ItemDB is ORM, and its job is: Map a Python class ↔ a database table
+    #Create new item with SQLAlchemy model (DB layer) = ItemDB
+    # This represents:
+    # Database table, Columns, Rows
+    # This is what actually maps to PostgreSQL
+    # ItemDB ORM, its job is: Map a Python class to a database table
+    new_item = ItemDB(
         name=item.name,
         price=item.price,
         description=item.description,
@@ -75,10 +76,13 @@ async def create_item(
         stock_quantity = item.stock_quantity
     ) # Create SQLAlchemy object. Pydantic → SQLAlchemy object
 
-    db.add(new_item) # Stage for insertion (Track this object. I plan to insert it)
-    # db.commit() is an async function. It returns a coroutine, must await it to actually execute.
-    await db.commit() # Execute INSERT query (Take everything I staged and make it permanent in the database)
-    await db.refresh(new_item) # Reloads the object from database to get the auto-generated id.
+    # stages the object in the session. Nothing written to DB yet
+    db.add(new_item)
+    # db.commit() is an async function.
+    # It returns a coroutine, must await it to actually execute.
+    await db.commit() # sends INSERT to PostgreSQL, transaction completes
+    # Syncs the Python object with the database row.
+    await db.refresh(new_item)
 
     return {
         "item": ItemInPublic(
@@ -203,7 +207,8 @@ async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = 
     # The AsyncSession sends that SQL to PostgreSQL
     # The database returns rows.
     # But SQLAlchemy wraps the result in a result object
-    result = await db.execute(select(ItemDB).where(ItemDB.id == item_id)) # SELECT * FROM items WHERE id = ?
+    # SELECT * FROM items WHERE id = ?
+    result = await db.execute(select(ItemDB).where(ItemDB.id == item_id))
     # The query result may contain: 0 rows, 1 row, many rows
     # scalar_one_or_none() means:
         # if 0 rows → return None
