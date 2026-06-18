@@ -30,10 +30,11 @@ response returned
 
 Every import you asked about sits in this pipeline.
 """
-
-from app.models import ItemCreate, ItemInPublic, CreateItemResponse # type: ignore
+# Relative import from parent directory (..)
+from ..models import ItemCreate, ItemInPublic, CreateItemResponse
 # ItemDB is the ORM model that represents a database table.
 from app.db_models import ItemDB # type: ignore
+# absolute import
 from app.database import get_db # type: ignore
 
 from typing import Annotated
@@ -44,8 +45,13 @@ APIRouter Configuration
 prefix: Auto-prepends "/items" to all routes in this file (e.g., /items/{id}).
         Prevents repetitive path typing.
 tags: Groups these routes under an "items" header in the /docs UI.
-        Purely for organizing the Swagger documentation."""
-# Think of a router like a container that collects endpoints.
+        Purely for organizing the Swagger documentation.
+
+APIRouter is identical to FastAPI for writing routes.
+Same decorators, same parameters, same everything.
+The difference is it's not the app itself —
+it's a collection of routes that gets attached to the app later.
+""" # Think of a router like a container that collects endpoints.
 router = APIRouter(prefix="/items", tags=["items"])
 
 """db: AsyncSession = Depends(get_db)

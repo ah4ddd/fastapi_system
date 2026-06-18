@@ -32,6 +32,24 @@ Main app now knows:
     GET /auth/me
     DELETE /auth/me
     PUT /auth/password
+
+app.include_router(items.router) takes every route defined in items.router
+and registers it with the main app.
+At startup FastAPI clones all those routes into the main route table.
+After this, from FastAPI's perspective,
+it's exactly as if you had written all those routes directly in main.py.
+The split is just for organization — at runtime it's one unified app.
+
+NOTES: CAN Add Extra Config At Include Time:
+    You can override or add to a router's config
+    when including it, without touching the router file ig:
+        app.include_router(
+            admin.router,
+            prefix="/admin",       # add prefix the router doesn't have
+            tags=["admin"],        # add tags
+            dependencies=[Depends(get_token_header)],  # add auth
+            responses={418: {"description": "I'm a teapot"}},
+        )
 """
 # include_router(items.router) = Take router.routes & attach them to app.routes
 app.include_router(items.router) # items.router → APIRouter instance
