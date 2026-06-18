@@ -5,6 +5,27 @@ import time
 # Built-in CORS middleware class
 from fastapi.middleware.cors import CORSMiddleware
 
+"""
+When server starts:
+    FastAPI
+    ↓
+    app.main:app
+    ↓
+    main.py executes
+    ↓
+    routers imported
+    ↓
+    database imported
+    ↓
+    models imported
+    ↓
+    app object created
+    ↓
+    routers attached
+    ↓
+    server starts
+"""
+
 app = FastAPI(
     title="FastAPI System",
     description="CRUD API with async support",

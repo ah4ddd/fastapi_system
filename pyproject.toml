@@ -1,0 +1,22 @@
+[tool.fastapi]
+entrypoint = "app.main:app"
+
+# app      -> package
+# main     -> module (main.py)
+# app      -> variable inside main.py
+
+# app.main:app
+#
+# fastapi_system
+#       │
+#       ▼
+# app/
+#       │
+#       ▼
+# main.py
+#       │
+#       ▼
+# app = FastAPI()
+#       │
+#       ▼
+# run server
