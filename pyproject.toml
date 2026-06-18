@@ -1,6 +1,10 @@
 [tool.fastapi]
 entrypoint = "app.main:app"
 
+# This tells the fastapi CLI where app lives
+# so you can just run fastapi dev without
+# specifying the file path every time. Minor but useful.
+
 # app      -> package
 # main     -> module (main.py)
 # app      -> variable inside main.py
