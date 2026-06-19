@@ -42,7 +42,7 @@ async def get_user_repos(
     top_repos = extract_top_repos(repos, limit=10)
 
     # Current timestamp
-    fetched_at = datetime.now(timezone.utc).isoformat
+    fetched_at = datetime.now(timezone.utc).isoformat()
 
     # Store each repo in database
     # Loop through repos, create DB object for each, commit once at end

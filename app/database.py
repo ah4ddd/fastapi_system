@@ -1,9 +1,9 @@
 # engine. sessions. dependency injection
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-import os
 from dotenv import load_dotenv
 from typing import Annotated
 from fastapi import Depends
+from .config import settings # type: ignore
 
 """
 PostrgeSQL NOTES:
@@ -61,9 +61,6 @@ PostrgeSQL NOTES:
 """
 
 
-# Loads environment variables from .env file.
-load_dotenv()
-
 # Get the connection string from environment variables.
 # postgresql://user:pass@localhost:5432/mydb
 #  |         │               │      │      │
@@ -71,9 +68,7 @@ load_dotenv()
 #  └Protocol │               │      └ port
 #            │               └host
 #            └login credentials
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL is not set")
+DATABASE_URL = settings.database_url
 
 # Replace postgresql:// with postgresql+asyncpg:// for async
 # because we're using asyncpg driver (async PostgreSQL driver)

@@ -1,11 +1,9 @@
 import httpx
-import os
-from dotenv import load_dotenv
+from ..config import settings
 from typing import Dict
 
-load_dotenv()
 
-COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY")
+COINGECKO_API_KEY = settings.coingecko_api_key
 BASE_URL = "https://api.coingecko.com/api/v3"
 
 

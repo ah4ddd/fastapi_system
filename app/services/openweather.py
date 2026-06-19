@@ -11,12 +11,9 @@ Browser → FastAPI Endpoint → fetch_weather() → OpenWeather API
 """
 
 import httpx # async HTTP client
-import os
-from dotenv import load_dotenv
+from ..config import settings
 
-load_dotenv()
-
-OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+OPENWEATHER_API_KEY = settings.openweather_api_key
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
