@@ -52,3 +52,13 @@ settings object
 entire application
 """
 settings = Settings() # type: ignore
+
+# yet to use
+"""
+What lru_cache Does — Simple Explanation
+lru_cache means "only create the Settings object once, then reuse it forever."
+Without it — every time you call get_settings() somewhere in your code,
+Python reads the .env file again and creates a new Settings object. Wasteful.
+With @lru_cache() — first call creates the Settings object and caches it.
+Every subsequent call returns the cached version. One file read, one object, shared everywhere
+"""
