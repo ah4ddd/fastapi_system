@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, BackgroundTasks
 # relative import (current package)
 from .routers import items, weather, github, crypto, auth
 import time
@@ -279,6 +279,56 @@ app.add_middleware( # Attach middleware to application.
     expose_headers=["X-Process-Time"]
 )
 
+"""
+Background Task
+
+Normal request:
+    Request
+    ↓
+    Endpoint
+    ↓
+    Work
+    ↓
+    Response
+
+Background task:
+    Request
+    ↓
+    Endpoint
+    ↓
+    Schedule task
+    ↓
+    Response immediately
+    ↓
+    Task executes afterwards
+
+Used for:
+    - emails
+    - logging
+    - analytics
+    - notifications
+
+Not for:
+    - AI training
+    - heavy computation
+    - long jobs
+
+Those use Celery/Redis workers.
+"""
+def write_log(message: str):
+    with open("background.log", "a") as log:
+        log.write(f"{message}\n")
+
+
+@app.post("app/test-background")
+async def test_background(
+    background_tasks: BackgroundTasks
+):
+    background_tasks.add_task(
+        write_log,
+        "Hello from Background Task!"
+    )
+    return{"message": "Task scheduled"}
 
 """
 Full lifecycle (what FastAPI actually does)
