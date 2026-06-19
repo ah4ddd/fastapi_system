@@ -4,7 +4,7 @@
 #          Auth logic (auth.py)
 #          Database
 
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession # DB connection
 from sqlalchemy import select # SQL query builder
 # db session injection
@@ -21,6 +21,7 @@ from typing import Annotated
 
 # All routes start with /auth = /signup → /auth/signup → /auth/login
 router = APIRouter(prefix="/auth", tags=["authentication"])
+
 
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -80,9 +81,33 @@ async def signup(
     )
 
 
+"""
+BACKGROUND TASK:
+    Client
+        ↓
+    POST /auth/login
+        ↓
+    verify credentials
+        ↓
+    create JWT
+        ↓
+    schedule log task
+        ↓
+    return response immediately
+        ↓
+    background task runs afterwards
+
+Purpose:
+    Client doesn't wait for logging.
+"""
+def log_login(email: str):
+    with open("app/auth.log", "a") as log:
+        log.write(f"[{datetime.now(timezone.utc)}] LOGIN: {email}\n")
+
 @router.post("/login", response_model=Token)
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)]
     ):
     """
@@ -124,6 +149,11 @@ async def login(
         "user_id": db_user.id
         }
     )
+
+    background_tasks.add_task(
+        log_login,
+        db_user.email
+     )
 
     # Client store this and send it later
     return Token(access_token=access_token, token_type="bearer")
@@ -219,6 +249,12 @@ async def delete_account(
     result = await db.execute(query)
 
     db_user = result.scalar_one_or_none()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
 
     await db.delete(db_user)
 
