@@ -26,28 +26,45 @@ When server starts:
     server starts
 """
 
+tags_metadata = [
+    {
+        "name": "authentication",
+        "description": "JWT authentication and account management."
+    },
+    {
+        "name": "items",
+        "description": "Inventory and item management."
+    },
+    {
+        "name": "weather",
+        "description": "Weather data using OpenWeather API."
+    },
+    {
+        "name": "crypto",
+        "description": "Cryptocurrency market data."
+    },
+    {
+        "name": "github",
+        "description": "GitHub repository analytics."
+    }
+]
+
 app = FastAPI(
     title="FastAPI Learning System",
     description="""
-A backend learning project built while learning:
+Backend learning playground.
 
-- FastAPI
+Features:
+- JWT Authentication
 - PostgreSQL
 - SQLAlchemy
-- JWT Authentication
-- External APIs
-- Alembic Migrations
+- Alembic
+- Weather API
+- GitHub API
+- Crypto API
 """,
-    version="1.4.0",
-    contact={
-    "name": "Ahad",
-    "email": "ahad@example.com"
-    },
-    license_info={
-    "name": "MIT"
-},
-
-
+    version="1.0.0",
+    openapi_tags=tags_metadata
 )
 
 # Take all routes registered on this router and attach them to the main app
