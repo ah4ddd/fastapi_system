@@ -82,20 +82,30 @@ async def signup(
 
 
 """
-BACKGROUND TASK:
+BACKGROUND TASK
+Visual timeline:
     Client
-        ↓
-    POST /auth/login
-        ↓
-    verify credentials
-        ↓
-    create JWT
-        ↓
-    schedule log task
-        ↓
-    return response immediately
-        ↓
-    background task runs afterwards
+    │
+    ▼
+    POST /login
+    │
+    ▼
+    Verify password
+    │
+    ▼
+    Create JWT
+    │
+    ▼
+    Schedule log task
+    │
+    ▼
+    RETURN RESPONSE
+    │
+    ▼
+    Client gets token
+    │
+    ▼
+    Run log_login()
 
 Purpose:
     Client doesn't wait for logging.
@@ -149,10 +159,11 @@ async def login(
         "user_id": db_user.id
         }
     )
-
+    # schedule task (runs after return)
+    # After response: log_login("ahad@gmail.com")
     background_tasks.add_task(
-        log_login,
-        db_user.email
+        log_login, # function
+        db_user.email # argument
      )
 
     # Client store this and send it later
