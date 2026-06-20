@@ -62,26 +62,3 @@ Python reads the .env file again and creates a new Settings object. Wasteful.
 With @lru_cache() — first call creates the Settings object and caches it.
 Every subsequent call returns the cached version. One file read, one object, shared everywhere
 """
-
-"""
-Background Tasks — You Need This For Your Project
-Two paragraphs. That's all this needs.
-Background tasks run AFTER your endpoint returns a response. Classic use: user registers, you return 201 immediately, THEN send the welcome email. User doesn't wait for the email to send.
-pythonfrom fastapi import BackgroundTasks
-
-def send_welcome_email(email: str):
-    # this runs after the response is already sent
-    print(f"Sending welcome email to {email}")
-
-@app.post("/register/")
-async def register(user: UserCreate, background_tasks: BackgroundTasks):
-    # create user in database
-    new_user = create_user(user)
-
-    # schedule email — doesn't block the response
-    background_tasks.add_task(send_welcome_email, new_user.email)
-
-    return {"message": "Registered successfully"}  # returns immediately
-Add it when you need it. Takes 10 minutes to implement.
-"""
-
