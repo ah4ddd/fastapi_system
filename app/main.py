@@ -27,9 +27,27 @@ When server starts:
 """
 
 app = FastAPI(
-    title="FastAPI System",
-    description="CRUD API with async support",
-    version="1.3.0"
+    title="FastAPI Learning System",
+    description="""
+A backend learning project built while learning:
+
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+- JWT Authentication
+- External APIs
+- Alembic Migrations
+""",
+    version="1.4.0",
+    contact={
+    "name": "Ahad",
+    "email": "ahad@example.com"
+    },
+    license_info={
+    "name": "MIT"
+},
+
+
 )
 
 # Take all routes registered on this router and attach them to the main app
