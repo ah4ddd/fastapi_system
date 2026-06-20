@@ -4,6 +4,8 @@ from .routers import items, weather, github, crypto, auth
 import time
 # Built-in CORS middleware class
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 """
 When server starts:
@@ -116,15 +118,10 @@ app.include_router(auth.router)
 
 
 # Root endpoints
-@app.get("/")
+@app.get("/health")
 async def read_root():
     return {"message": "System is alive"}
 
-@app.get("/health")
-async def health_check():
-    return {
-        "status": "healthy"
-    }
 
 
 """
@@ -364,6 +361,28 @@ async def test_background(
         "Hello from Background Task!"
     )
     return{"message": "Task scheduled"}
+
+"""
+Browser asks:
+    /static/style.css
+        ↓
+FastAPI looks inside:
+    frontend/style.css
+"""
+app.mount(
+    "/static",
+    StaticFiles(directory="frontend"),
+    name="static"
+)
+
+
+# Open file: frontend/index.html
+# Read contents
+# Send contents
+# Browser receives HTML
+@app.get("/")
+async def homepage():
+    return FileResponse("frontend/index.html")
 
 """
 Full lifecycle (what FastAPI actually does)
