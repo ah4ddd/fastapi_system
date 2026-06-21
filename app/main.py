@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+
 """
 When server starts:
     FastAPI
@@ -69,6 +70,7 @@ Features:
     openapi_tags=tags_metadata
 )
 
+
 # Take all routes registered on this router and attach them to the main app
 """
 FastAPI App
@@ -119,9 +121,8 @@ app.include_router(auth.router)
 
 # Root endpoints
 @app.get("/health")
-async def read_root():
+async def read_health():
     return {"message": "System is alive"}
-
 
 
 """
@@ -352,7 +353,7 @@ def write_log(message: str):
         log.write(f"{message}\n")
 
 
-@app.post("app/test-background")
+@app.post("/test-background")
 async def test_background(
     background_tasks: BackgroundTasks
 ):
