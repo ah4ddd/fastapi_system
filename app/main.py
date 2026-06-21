@@ -28,7 +28,6 @@ When server starts:
     ↓
     server starts
 """
-
 tags_metadata = [
     {
         "name": "authentication",
@@ -69,6 +68,8 @@ Features:
     version="1.0.0",
     openapi_tags=tags_metadata
 )
+
+
 
 
 # Take all routes registered on this router and attach them to the main app
