@@ -4,6 +4,7 @@ from .routers import items, weather, github, crypto, auth
 import time
 # Built-in CORS middleware class
 from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
@@ -103,7 +104,7 @@ The split is just for organization — at runtime it's one unified app.
 
 NOTES: CAN Add Extra Config At Include Time:
     You can override or add to a router's config
-    when including it, without touching the router file ig:
+    when including it, without touching the router file eg:
         app.include_router(
             admin.router,
             prefix="/admin",       # add prefix the router doesn't have
