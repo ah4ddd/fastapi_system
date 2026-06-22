@@ -68,7 +68,7 @@ async def create_item(
     item: ItemCreate,
     db: Annotated[AsyncSession, Depends(get_db)]
     ):
-    #Create new item with SQLAlchemy model (DB layer) = ItemDB
+    # Create new item with SQLAlchemy model (DB layer) = ItemDB
     # This represents:
     # Database table, Columns, Rows
     # This is what actually maps to PostgreSQL
@@ -118,13 +118,12 @@ That's the whole point.
 """
 @router.get("/", response_model=list[ItemInPublic])
 async def get_items(db: AsyncSession = Depends(get_db)):
-    """
-    - execute() runs the SQL query which fetches data,
-    and brings results from the database into memory
-    - It stores them inside a result container
-    - .scalars() extracts the ORM objects from each row
-    - .all() turns them into a Python list
-    - That list is now usable in your endpoint"""
+    # - execute() runs the SQL query which fetches data,
+    # and brings results from the database into memory
+    # - It stores them inside a result container
+    # - .scalars() extracts the ORM objects from each row
+    # - .all() turns them into a Python list
+    # - That list is now usable in your endpoint
     result = await db.execute(select(ItemDB)) # SELECT * FROM items
     items = result.scalars().all() # Get all results as Python objects into a list
 
@@ -219,23 +218,24 @@ async def update_item(item_id: int, item_update: ItemCreate, db: AsyncSession = 
     # scalar_one_or_none() means:
         # if 0 rows → return None
         # if 1 row → return that object
-        # if >1 rows → throw error
+        # if > 1 rows → throw error
     # In our case the query filters by primary key id, so only one row can exist
-    existing_item = result.scalar_one_or_none()
+    existing_item = result.scalar_one_or_none() # attached to the db session
 
     if existing_item is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Item with ID {item_id} does not exist"
         )
-    # Change attribute
+    # Change attribute (modifying the Python object in memory)
     existing_item.name = item_update.name
     existing_item.price = item_update.price
     existing_item.description = item_update.description
     existing_item.cost_price = item_update.price * 0.6
     # Execute UPDATE query
-    #SQLAlchemy detects changes and executes:
-    await db.commit() # UPDATE items SET name = ?, price = ?, cost_price = ? WHERE id = ?;
+    # SQLAlchemy detects changes and executes:
+    # UPDATE items SET name = ?, price = ?, cost_price = ? WHERE id = ?;
+    await db.commit()
     await db.refresh(existing_item)
 
     return ItemInPublic(

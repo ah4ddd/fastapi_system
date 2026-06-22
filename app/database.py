@@ -1,6 +1,5 @@
 # engine. sessions. dependency injection
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from dotenv import load_dotenv
 from typing import Annotated
 from fastapi import Depends
 from .config import settings # type: ignore
@@ -117,12 +116,12 @@ session → engine → pool → connection
 Why async? Because we're using async def in FastAPI.
 Regular SQLAlchemy would block.
 """
-engine = create_async_engine(ASYNC_DATABASE_URL, echo=True) # echo=True = Print every SQL query to the terminal
+engine = create_async_engine(ASYNC_DATABASE_URL, echo=False) # echo=True = Print every SQL query to the terminal
 
 
 # Creates a factory for database sessions.
 # A session = a conversation with the database.
-""" Use AsyncSession instead of regular Session
+"""Use AsyncSession instead of regular Session
 - All methods return awaitable objects
 - You use await with them
 expire_on_commit=False = Don't clear object attributes after commit (keeps them accessible)
