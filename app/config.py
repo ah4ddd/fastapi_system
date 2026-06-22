@@ -1,4 +1,4 @@
-# centralize evn vars
+# centralize environment variables
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 

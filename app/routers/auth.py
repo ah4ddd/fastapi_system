@@ -15,13 +15,14 @@ from app.models import UserSignup, UserLogin, Token, UserResponse, PasswordUpdat
 from app.db_models import UserDB # type: ignore
 # Auth logic
 from app.auth import hash_password, verify_password, create_access_token, get_current_user # type: ignore
+# time signing
 from datetime import datetime, timezone
+
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
 # All routes start with /auth = /signup → /auth/signup → /auth/login
 router = APIRouter(prefix="/auth", tags=["authentication"])
-
 
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -169,6 +170,7 @@ async def login(
     # Client store this and send it later
     return Token(access_token=access_token, token_type="bearer")
 
+
 # The dependency (Depends(get_current_user)) does ALL the validation
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
@@ -204,7 +206,7 @@ async def get_current_user_info(
     )
 
 
-@router.put("/password")
+@router.put("/update-password")
 async def update_password(
     password_data: PasswordUpdate,
     user: Annotated[dict, Depends(get_current_user)],

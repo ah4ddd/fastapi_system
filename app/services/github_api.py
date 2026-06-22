@@ -7,7 +7,7 @@ httpx supports:
 It's preferred for FastAPI async apps.
 """
 import httpx # FastAPI server → GitHub API
-from typing import List, Dict # type hinting.
+from typing import List, Dict
 
 
 async def fetch_user_repos(username: str) -> List[Dict] | None:

@@ -39,7 +39,7 @@ def hash_password(password: str) -> str:
     """
     Hash a plain-text password.
 
-    Uses Argon2 algorithm. One-way transformation.
+    Use Argon2 algorithm. One-way transformation.
     """
     return password_hash.hash(password)
 
@@ -81,8 +81,7 @@ def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 
-# Given the same inputs, these functions always produce the same output.
-#    (bcrypt with a fixed salt, HMAC with a fixed key)
+# Given the same inputs, these functions always produce the same output
 def decode_access_token(token: str) -> dict | None:
     """
     Decode and validate a JWT token.
