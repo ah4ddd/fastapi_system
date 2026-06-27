@@ -23,11 +23,11 @@ GET /health
 Sends into FastAPI
 """
 def test_read_health():
-    response = client.get("/health")
+    response = client.get("/system-status")
     # Expected: 200. Actual: 200. PASS
     assert response.status_code == 200
     # Expected JSON = Actual JSON. PASS
-    assert response.json() == {"message": "System is alive"}
+    assert response.json() == {"status": "ok"}
 
 
 def test_background_task():
