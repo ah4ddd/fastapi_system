@@ -106,7 +106,7 @@ represents one full data unit.
 
 
 Simplified DOM Hierarchy of Books Page
---------------------------------------
+---------------------------------------
 
 html
 └── body
